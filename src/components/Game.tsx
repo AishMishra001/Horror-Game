@@ -17,11 +17,14 @@ export default function Game() {
       <Canvas 
         shadows={{ type: THREE.PCFShadowMap }}
         dpr={[1, 1.25]}
+        frameloop="always"
+        performance={{ min: 0.5 }}
         gl={{ 
-          antialias: true, 
+          antialias: false, 
           powerPreference: 'high-performance',
           stencil: false,
-          depth: true
+          depth: true,
+          alpha: false
         }}
         camera={{ fov: 75, near: 0.1, far: 80 }}
       >
@@ -32,7 +35,8 @@ export default function Game() {
           <Physics 
             paused={gameState !== 'playing'}
             gravity={[0, -9.81, 0]}
-            timeStep="vary"
+            timeStep={1 / 60}
+            interpolate={true}
           >
             <Player />
             <Mansion />

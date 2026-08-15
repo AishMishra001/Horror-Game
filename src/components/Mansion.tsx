@@ -1,10 +1,10 @@
 'use client';
 
-import { RigidBody, CuboidCollider, RapierRigidBody } from '@react-three/rapier';
+import { RigidBody, CuboidCollider } from '@react-three/rapier';
 import { useGameStore } from '@/store/useGameStore';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Vector3, Mesh } from 'three';
+import { Mesh } from 'three';
 import { useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 import HorrorKitchen from './HorrorKitchen';
@@ -22,354 +22,462 @@ function playDoorUnlock() {
 function WashroomMirror({ position, rotY }: { position: [number, number, number]; rotY: number }) {
   return (
     <group position={position} rotation={[0, rotY, 0]}>
-      {/* Mirror frame */}
-      <mesh castShadow>
+      <mesh>
         <boxGeometry args={[2.2, 2.2, 0.06]} />
-        <meshStandardMaterial color="#5c3a1e" roughness={0.4} metalness={0.2} />
+        <meshStandardMaterial color="#3a2210" roughness={0.4} metalness={0.3} />
       </mesh>
-      {/* Reflective mirror surface */}
       <mesh position={[0, 0, 0.04]}>
         <planeGeometry args={[1.9, 1.9]} />
-        <meshStandardMaterial
-          metalness={0.98}
-          roughness={0.06}
-          color="#d5e2e8"
-        />
-      </mesh>
-      {/* Subtle light above mirror */}
-      <pointLight position={[0, 1.3, 0.5]} intensity={8} distance={5} color="#ffe8d0" />
-    </group>
-  );
-}
-
-// ─── Bathroom Toilet ─────────────────────────────────────────────────────────
-function Toilet({ position }: { position: [number, number, number] }) {
-  return (
-    <group position={position}>
-      {/* Base */}
-      <mesh position={[0, 0.22, 0]} castShadow>
-        <boxGeometry args={[0.5, 0.44, 0.6]} />
-        <meshStandardMaterial color="#dde8ee" roughness={0.3} />
-      </mesh>
-      {/* Tank */}
-      <mesh position={[0, 0.72, -0.18]} castShadow>
-        <boxGeometry args={[0.44, 0.5, 0.22]} />
-        <meshStandardMaterial color="#dde8ee" roughness={0.3} />
-      </mesh>
-      {/* Seat rim */}
-      <mesh position={[0, 0.46, 0.04]} castShadow>
-        <torusGeometry args={[0.18, 0.04, 8, 24]} />
-        <meshStandardMaterial color="#c8d8e0" roughness={0.4} />
+        <meshStandardMaterial metalness={0.96} roughness={0.08} color="#cddde4" />
       </mesh>
     </group>
   );
 }
 
-// ─── Bathroom Sink ────────────────────────────────────────────────────────────
-function Sink({ position }: { position: [number, number, number] }) {
-  return (
-    <group position={position}>
-      {/* Basin */}
-      <mesh position={[0, 0.88, 0]} castShadow>
-        <boxGeometry args={[0.5, 0.18, 0.4]} />
-        <meshStandardMaterial color="#dde8ee" roughness={0.2} />
-      </mesh>
-      {/* Pedestal */}
-      <mesh position={[0, 0.45, 0]} castShadow>
-        <cylinderGeometry args={[0.08, 0.1, 0.72, 10]} />
-        <meshStandardMaterial color="#dde8ee" roughness={0.3} />
-      </mesh>
-      {/* Tap */}
-      <mesh position={[0, 1.0, -0.12]} castShadow>
-        <cylinderGeometry args={[0.02, 0.02, 0.16, 8]} />
-        <meshStandardMaterial color="#b0b0b0" roughness={0.1} metalness={0.8} />
-      </mesh>
-    </group>
-  );
-}
-
-// ─── Bedroom Bed ──────────────────────────────────────────────────────────────
-function Bed({ position, rotY = 0 }: { position: [number, number, number]; rotY?: number }) {
+// ─── Victorian Pull-Chain Toilet ─────────────────────────────────────────────
+function VictorianToilet({ position, rotY = 0 }: { position: [number, number, number]; rotY?: number }) {
   return (
     <group position={position} rotation={[0, rotY, 0]}>
-      {/* Frame */}
-      <mesh position={[0, 0.22, 0]} castShadow receiveShadow>
-        <boxGeometry args={[1.4, 0.28, 2.2]} />
-        <meshStandardMaterial color="#5c3010" roughness={0.8} />
+      {/* Porcelain Bowl */}
+      <mesh position={[0, 0.25, 0]}>
+        <boxGeometry args={[0.5, 0.5, 0.65]} />
+        <meshStandardMaterial color="#c5d3d8" roughness={0.4} />
       </mesh>
-      {/* Mattress */}
-      <mesh position={[0, 0.42, 0]} castShadow receiveShadow>
-        <boxGeometry args={[1.3, 0.16, 2.0]} />
-        <meshStandardMaterial color="#c8b89a" roughness={0.9} />
+      {/* Dark Wood Seat */}
+      <mesh position={[0, 0.52, 0.05]}>
+        <torusGeometry args={[0.2, 0.05, 6, 12]} />
+        <meshStandardMaterial color="#2d1505" roughness={0.7} />
       </mesh>
-      {/* Pillow */}
-      <mesh position={[0, 0.52, -0.8]} castShadow>
-        <boxGeometry args={[1.0, 0.12, 0.4]} />
-        <meshStandardMaterial color="#f0e8d8" roughness={0.9} />
+      {/* High Wall Tank */}
+      <mesh position={[0, 2.3, -0.25]}>
+        <boxGeometry args={[0.6, 0.45, 0.3]} />
+        <meshStandardMaterial color="#1a0c02" roughness={0.8} />
       </mesh>
-      {/* Headboard */}
-      <mesh position={[0, 0.7, -1.1]} castShadow>
-        <boxGeometry args={[1.4, 0.9, 0.1]} />
-        <meshStandardMaterial color="#5c3010" roughness={0.8} />
+      {/* Flush Pipe */}
+      <mesh position={[0, 1.35, -0.22]}>
+        <cylinderGeometry args={[0.02, 0.02, 1.6, 6]} />
+        <meshStandardMaterial color="#887755" metalness={0.8} roughness={0.3} />
       </mesh>
     </group>
   );
 }
 
-// ─── Desk ────────────────────────────────────────────────────────────────────
-function Desk({ position }: { position: [number, number, number] }) {
+// ─── Victorian Pedestal Sink ─────────────────────────────────────────────────
+function PedestalSink({ position, rotY = 0 }: { position: [number, number, number]; rotY?: number }) {
   return (
-    <group position={position}>
-      {/* Top */}
-      <mesh position={[0, 0.76, 0]} castShadow receiveShadow>
-        <boxGeometry args={[1.1, 0.06, 0.55]} />
-        <meshStandardMaterial color="#6b3a1a" roughness={0.7} />
+    <group position={position} rotation={[0, rotY, 0]}>
+      {/* Basin */}
+      <mesh position={[0, 0.88, 0]}>
+        <boxGeometry args={[0.7, 0.2, 0.5]} />
+        <meshStandardMaterial color="#d2dee2" roughness={0.3} />
       </mesh>
-      {/* Legs */}
-      {([-0.48, 0.48] as number[]).flatMap((x) =>
-        ([-0.22, 0.22] as number[]).map((z, j) => (
-          <mesh key={`${x}-${z}`} position={[x, 0.35, z]} castShadow>
-            <boxGeometry args={[0.06, 0.72, 0.06]} />
-            <meshStandardMaterial color="#4a2a0e" roughness={0.8} />
+      {/* Pedestal column */}
+      <mesh position={[0, 0.44, 0]}>
+        <cylinderGeometry args={[0.1, 0.12, 0.72, 8]} />
+        <meshStandardMaterial color="#d2dee2" roughness={0.3} />
+      </mesh>
+      {/* Brass Faucet */}
+      <mesh position={[0, 1.04, -0.16]}>
+        <cylinderGeometry args={[0.025, 0.025, 0.18, 6]} />
+        <meshStandardMaterial color="#998040" metalness={0.8} roughness={0.2} />
+      </mesh>
+    </group>
+  );
+}
+
+// ─── Victorian Clawfoot Bathtub ──────────────────────────────────────────────
+function ClawfootBathtub({ position, rotY = 0, bloody = false }: { position: [number, number, number]; rotY?: number; bloody?: boolean }) {
+  return (
+    <group position={position} rotation={[0, rotY, 0]}>
+      {/* Outer porcelain tub body */}
+      <mesh position={[0, 0.45, 0]} receiveShadow>
+        <boxGeometry args={[1.1, 0.65, 2.2]} />
+        <meshStandardMaterial color="#c0cfd6" roughness={0.35} />
+      </mesh>
+      {/* Inner tub cavity / water */}
+      <mesh position={[0, 0.55, 0]}>
+        <boxGeometry args={[0.9, 0.45, 1.95]} />
+        <meshStandardMaterial 
+          color={bloody ? '#550505' : '#1a2a35'} 
+          roughness={0.1} 
+          metalness={0.2}
+          emissive={bloody ? '#300000' : '#000000'}
+        />
+      </mesh>
+      {/* 4 Brass Feet */}
+      {[-0.48, 0.48].map((x) =>
+        [-0.95, 0.95].map((z) => (
+          <mesh key={`claw-${x}-${z}`} position={[x, 0.1, z]}>
+            <cylinderGeometry args={[0.04, 0.07, 0.2, 6]} />
+            <meshStandardMaterial color="#8a7330" metalness={0.8} roughness={0.3} />
           </mesh>
         ))
       )}
-      {/* Candle on desk */}
-      <mesh position={[0.3, 0.82, 0]} castShadow>
-        <cylinderGeometry args={[0.04, 0.04, 0.18, 8]} />
-        <meshStandardMaterial color="#f5f0e0" roughness={0.9} />
+      {/* Brass antique taps */}
+      <mesh position={[0, 0.85, -1.02]}>
+        <cylinderGeometry args={[0.03, 0.03, 0.22, 6]} />
+        <meshStandardMaterial color="#8a7330" metalness={0.8} roughness={0.3} />
       </mesh>
-      <pointLight position={[0.3, 0.92, 0]} intensity={4} distance={3} color="#ff9922" />
     </group>
   );
 }
 
-function InteractableKitchenGate({ wallTex }: { wallTex: THREE.Texture }) {
-  const { setInteractPrompt } = useGameStore();
-  const [isOpen, setIsOpen] = useState(false);
-  const isOpenRef = useRef(false);
-  const canInteractRef = useRef(false);
-  const gateRef = useRef<RapierRigidBody>(null);
-  const pivotRef = useRef<THREE.Group>(null);
-  
-  isOpenRef.current = isOpen;
-
-  const playGateSound = () => {
-    if (typeof window !== 'undefined') {
-      const audio = new Audio('/stairs and doors.mp3');
-      audio.volume = 0.5;
-      audio.play().catch(() => {});
-    }
-  };
-
-  useFrame((_, delta) => {
-    if (pivotRef.current) {
-      const targetRotation = isOpen ? Math.PI / 1.8 : 0;
-      pivotRef.current.rotation.y += (targetRotation - pivotRef.current.rotation.y) * delta * 5;
-      
-      if (gateRef.current) {
-        const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, pivotRef.current.rotation.y, 0));
-        gateRef.current.setNextKinematicRotation(q);
-      }
-    }
-  });
-
-  useEffect(() => {
-    const handleKey = (evt: KeyboardEvent) => {
-      if (evt.code === 'KeyE' && canInteractRef.current) {
-        playGateSound();
-        const next = !isOpenRef.current;
-        setIsOpen(next);
-        isOpenRef.current = next;
-        setInteractPrompt(next ? 'Press E to Close Gate' : 'Press E to Open Gate');
-      }
-    };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [setInteractPrompt]);
-
+// ─── Master Victorian 4-Poster Canopy Bed ─────────────────────────────────────
+function FourPosterBed({ position, rotY = 0 }: { position: [number, number, number]; rotY?: number }) {
   return (
-    <group position={[-5, 0, -7.5]}>
-      <RigidBody type="fixed" colliders="cuboid" position={[0, 3.5, 0]}>
-        <mesh castShadow receiveShadow>
-          <boxGeometry args={[0.5, 1, 2]} />
-          <meshStandardMaterial map={wallTex} />
+    <group position={position} rotation={[0, rotY, 0]}>
+      {/* Mattress base */}
+      <mesh position={[0, 0.4, 0]} receiveShadow>
+        <boxGeometry args={[2.2, 0.4, 2.6]} />
+        <meshStandardMaterial color="#2d1606" roughness={0.8} />
+      </mesh>
+      {/* Quilt Mattress */}
+      <mesh position={[0, 0.65, 0]} receiveShadow>
+        <boxGeometry args={[2.0, 0.25, 2.4]} />
+        <meshStandardMaterial color="#4a1015" roughness={0.9} />
+      </mesh>
+      {/* Pillows */}
+      {[-0.55, 0.55].map((x, idx) => (
+        <mesh key={`pillow-${idx}`} position={[x, 0.82, -0.85]}>
+          <boxGeometry args={[0.7, 0.16, 0.45]} />
+          <meshStandardMaterial color="#ded1bc" roughness={0.9} />
+        </mesh>
+      ))}
+      {/* Headboard */}
+      <mesh position={[0, 1.2, -1.25]}>
+        <boxGeometry args={[2.2, 1.4, 0.12]} />
+        <meshStandardMaterial color="#1f0e04" roughness={0.7} />
+      </mesh>
+      {/* 4 Carved Wooden Corner Posts */}
+      {[-1.05, 1.05].map((x) =>
+        [-1.25, 1.25].map((z) => (
+          <mesh key={`post-${x}-${z}`} position={[x, 1.6, z]}>
+            <cylinderGeometry args={[0.06, 0.07, 3.2, 6]} />
+            <meshStandardMaterial color="#1a0a02" roughness={0.7} />
+          </mesh>
+        ))
+      )}
+      {/* Top Canopy Roof Frame */}
+      <mesh position={[0, 3.2, 0]}>
+        <boxGeometry args={[2.2, 0.08, 2.6]} />
+        <meshStandardMaterial color="#30080c" roughness={0.9} />
+      </mesh>
+    </group>
+  );
+}
+
+// ─── Antique Armoire / Wardrobe ──────────────────────────────────────────────
+function AntiqueArmoire({ position, rotY = 0 }: { position: [number, number, number]; rotY?: number }) {
+  return (
+    <group position={position} rotation={[0, rotY, 0]}>
+      {/* Main cabinet body */}
+      <mesh position={[0, 1.6, 0]} receiveShadow>
+        <boxGeometry args={[1.6, 3.2, 0.8]} />
+        <meshStandardMaterial color="#241106" roughness={0.8} />
+      </mesh>
+      {/* Ornate Top Crest */}
+      <mesh position={[0, 3.3, 0]}>
+        <boxGeometry args={[1.75, 0.22, 0.9]} />
+        <meshStandardMaterial color="#1a0c04" roughness={0.7} />
+      </mesh>
+      {/* Double Doors Panels */}
+      {[-0.38, 0.38].map((x, idx) => (
+        <mesh key={`door-${idx}`} position={[x, 1.6, 0.42]}>
+          <boxGeometry args={[0.68, 2.7, 0.04]} />
+          <meshStandardMaterial color="#180a03" roughness={0.9} />
+        </mesh>
+      ))}
+      {/* Brass Handles */}
+      {[-0.08, 0.08].map((x, idx) => (
+        <mesh key={`h-${idx}`} position={[x, 1.6, 0.46]}>
+          <cylinderGeometry args={[0.015, 0.015, 0.12, 6]} />
+          <meshStandardMaterial color="#a08830" metalness={0.8} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+// ─── Victorian Writing Desk ──────────────────────────────────────────────────
+function VictorianDesk({ position, rotY = 0 }: { position: [number, number, number]; rotY?: number }) {
+  return (
+    <group position={position} rotation={[0, rotY, 0]}>
+      {/* Desktop */}
+      <mesh position={[0, 0.8, 0]} receiveShadow>
+        <boxGeometry args={[1.6, 0.08, 0.9]} />
+        <meshStandardMaterial color="#381a09" roughness={0.7} />
+      </mesh>
+      {/* Left drawer pedestal */}
+      <mesh position={[-0.6, 0.38, 0]}>
+        <boxGeometry args={[0.35, 0.76, 0.8]} />
+        <meshStandardMaterial color="#271206" roughness={0.8} />
+      </mesh>
+      {/* Right drawer pedestal */}
+      <mesh position={[0.6, 0.38, 0]}>
+        <boxGeometry args={[0.35, 0.76, 0.8]} />
+        <meshStandardMaterial color="#271206" roughness={0.8} />
+      </mesh>
+      {/* Antique Skull on Desk */}
+      <mesh position={[0.4, 0.95, -0.1]}>
+        <sphereGeometry args={[0.12, 8, 8]} />
+        <meshStandardMaterial color="#dfd8c8" roughness={0.8} />
+      </mesh>
+      {/* Open Cursed Diary */}
+      <mesh position={[-0.1, 0.86, 0.1]} rotation={[-0.05, 0.15, 0]}>
+        <boxGeometry args={[0.32, 0.04, 0.24]} />
+        <meshStandardMaterial color="#501010" roughness={0.9} />
+      </mesh>
+      {/* Candle with warm flame */}
+      <mesh position={[-0.5, 0.92, -0.2]}>
+        <cylinderGeometry args={[0.03, 0.03, 0.16, 6]} />
+        <meshStandardMaterial color="#e8dfcb" roughness={0.8} />
+      </mesh>
+    </group>
+  );
+}
+
+// ─── Victorian Brick Fireplace ───────────────────────────────────────────────
+function VictorianFireplace({ position, rotY = 0 }: { position: [number, number, number]; rotY?: number }) {
+  return (
+    <group position={position} rotation={[0, rotY, 0]}>
+      {/* Outer Brick Frame */}
+      <mesh position={[0, 1.2, 0]} receiveShadow>
+        <boxGeometry args={[2.2, 2.4, 0.6]} />
+        <meshStandardMaterial color="#301815" roughness={0.95} />
+      </mesh>
+      {/* Firebox Cavity */}
+      <mesh position={[0, 0.7, 0.08]}>
+        <boxGeometry args={[1.3, 1.4, 0.5]} />
+        <meshStandardMaterial color="#0a0505" roughness={1.0} />
+      </mesh>
+      {/* Ornate Wooden Mantle Shelf */}
+      <mesh position={[0, 2.45, 0.05]}>
+        <boxGeometry args={[2.5, 0.15, 0.8]} />
+        <meshStandardMaterial color="#200d04" roughness={0.7} />
+      </mesh>
+      {/* Glowing Dying Embers in hearth */}
+      <mesh position={[0, 0.15, 0.1]}>
+        <boxGeometry args={[0.8, 0.1, 0.3]} />
+        <meshStandardMaterial color="#ff3300" emissive="#ff2200" emissiveIntensity={1.2} />
+      </mesh>
+      <pointLight position={[0, 0.35, 0.25]} intensity={6} distance={4} color="#ff4411" castShadow={false} />
+    </group>
+  );
+}
+
+// ─── Occult Ritual Pentagram & Red Candles ────────────────────────────────────
+function OccultRitualCircle({ position }: { position: [number, number, number] }) {
+  return (
+    <group position={position}>
+      {/* Ritual Pentagram Ring on Floor */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
+        <ringGeometry args={[1.6, 1.75, 16]} />
+        <meshStandardMaterial color="#880000" emissive="#550000" emissiveIntensity={0.6} roughness={0.9} />
+      </mesh>
+      {/* Inverted Star lines */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]}>
+        <circleGeometry args={[1.58, 5]} />
+        <meshStandardMaterial color="#3a0005" roughness={0.95} transparent opacity={0.6} />
+      </mesh>
+      {/* 5 Ritual Candles along the circle points */}
+      {Array.from({ length: 5 }).map((_, i) => {
+        const angle = (i * Math.PI * 2) / 5 - Math.PI / 2;
+        const cx = Math.cos(angle) * 1.68;
+        const cz = Math.sin(angle) * 1.68;
+        return (
+          <group key={`rcandle-${i}`} position={[cx, 0, cz]}>
+            <mesh position={[0, 0.15, 0]}>
+              <cylinderGeometry args={[0.04, 0.04, 0.3, 6]} />
+              <meshStandardMaterial color="#200000" roughness={0.9} />
+            </mesh>
+            <mesh position={[0, 0.33, 0]}>
+              <sphereGeometry args={[0.025, 6, 6]} />
+              <meshBasicMaterial color="#ff2200" />
+            </mesh>
+          </group>
+        );
+      })}
+      <pointLight position={[0, 0.8, 0]} intensity={10} distance={5} color="#ff1100" castShadow={false} />
+    </group>
+  );
+}
+
+// ─── Gothic Cursed Bookshelf ──────────────────────────────────────────────────
+function GothicBookshelf({ position, rotY = 0 }: { position: [number, number, number]; rotY?: number }) {
+  return (
+    <group position={position} rotation={[0, rotY, 0]}>
+      {/* Frame */}
+      <mesh position={[0, 1.8, 0]} receiveShadow>
+        <boxGeometry args={[1.8, 3.6, 0.5]} />
+        <meshStandardMaterial color="#1a0c04" roughness={0.85} />
+      </mesh>
+      {/* Shelves rows */}
+      {[-0.8, -0.1, 0.6, 1.3].map((y, idx) => (
+        <group key={`shelf-${idx}`} position={[0, 1.8 + y, 0]}>
+          <mesh position={[0, 0.18, 0.05]}>
+            <boxGeometry args={[1.55, 0.32, 0.32]} />
+            <meshStandardMaterial color={idx % 2 === 0 ? '#4a1212' : '#1c2415'} roughness={0.9} />
+          </mesh>
+        </group>
+      ))}
+      {/* Skull on top shelf */}
+      <mesh position={[0.4, 3.25, 0.05]}>
+        <sphereGeometry args={[0.11, 8, 8]} />
+        <meshStandardMaterial color="#dfd4be" roughness={0.8} />
+      </mesh>
+    </group>
+  );
+}
+
+// ─── Gothic Wooden Balustrade / Railing (High Performance) ───────────────────
+function GothicRailing({
+  position,
+  length,
+  rotY = 0,
+}: {
+  position: [number, number, number];
+  length: number;
+  rotY?: number;
+}) {
+  const numPosts = Math.max(3, Math.floor(length / 2.0));
+  return (
+    <group position={position} rotation={[0, rotY, 0]}>
+      {/* Top Handrail */}
+      <mesh position={[0, 0.95, 0]}>
+        <boxGeometry args={[0.14, 0.08, length]} />
+        <meshStandardMaterial color="#2d1505" roughness={0.6} />
+      </mesh>
+      {/* Bottom Rail */}
+      <mesh position={[0, 0.08, 0]}>
+        <boxGeometry args={[0.12, 0.06, length]} />
+        <meshStandardMaterial color="#220e03" roughness={0.7} />
+      </mesh>
+      {/* Gothic Patterned Rail Infill Slab */}
+      <mesh position={[0, 0.5, 0]}>
+        <boxGeometry args={[0.04, 0.78, length * 0.98]} />
+        <meshStandardMaterial color="#1a0c02" roughness={0.8} />
+      </mesh>
+      {/* Key Sturdy Balustrade Posts */}
+      {Array.from({ length: numPosts }).map((_, i) => {
+        const zPos = -length / 2 + (i + 0.5) * (length / numPosts);
+        return (
+          <mesh key={`post-${i}`} position={[0, 0.5, zPos]}>
+            <boxGeometry args={[0.08, 0.9, 0.08]} />
+            <meshStandardMaterial color="#220e03" roughness={0.6} />
+          </mesh>
+        );
+      })}
+      {/* RigidBody Collider for safe walking along balcony */}
+      <RigidBody type="fixed" colliders="cuboid" position={[0, 0.5, 0]}>
+        <mesh visible={false}>
+          <boxGeometry args={[0.2, 1.0, length]} />
         </mesh>
       </RigidBody>
-      
-      <group position={[0, 1.5, -0.9]} ref={pivotRef}>
-        <RigidBody ref={gateRef} type="kinematicPosition" colliders="cuboid" position={[0, 0, 0.9]}>
-          <mesh castShadow receiveShadow>
-            <boxGeometry args={[0.1, 3, 1.8]} />
-            <meshStandardMaterial color="#1a0a00" roughness={0.9} />
-          </mesh>
-        </RigidBody>
-      </group>
-
-      <RigidBody
-        type="fixed"
-        position={[0, 1.5, 0]}
-        sensor
-        onIntersectionEnter={(e) => {
-          if (e.other.rigidBodyObject?.name === 'player') {
-            canInteractRef.current = true;
-            setInteractPrompt(isOpenRef.current ? 'Press E to Close Gate' : 'Press E to Open Gate');
-          }
-        }}
-        onIntersectionExit={(e) => {
-          if (e.other.rigidBodyObject?.name === 'player') {
-            canInteractRef.current = false;
-            setInteractPrompt(null);
-          }
-        }}
-      >
-        <CuboidCollider args={[2, 1.5, 2]} />
-      </RigidBody>
     </group>
   );
 }
 
-
+// ─── Gothic Key Pedestal on Front Balcony ─────────────────────────────────────
+function KeyPedestal({ position }: { position: [number, number, number] }) {
+  return (
+    <group position={position}>
+      {/* Stone base plinth */}
+      <mesh position={[0, 0.15, 0]} receiveShadow>
+        <boxGeometry args={[0.8, 0.3, 0.8]} />
+        <meshStandardMaterial color="#1a1816" roughness={0.9} />
+      </mesh>
+      {/* Column shaft */}
+      <mesh position={[0, 0.6, 0]}>
+        <cylinderGeometry args={[0.22, 0.28, 0.7, 8]} />
+        <meshStandardMaterial color="#252220" roughness={0.85} />
+      </mesh>
+      {/* Top plinth table */}
+      <mesh position={[0, 1.0, 0]} receiveShadow>
+        <boxGeometry args={[0.7, 0.1, 0.7]} />
+        <meshStandardMaterial color="#1a1816" roughness={0.9} />
+      </mesh>
+      {/* Red velvet display cushion */}
+      <mesh position={[0, 1.08, 0]}>
+        <boxGeometry args={[0.45, 0.06, 0.45]} />
+        <meshStandardMaterial color="#55000a" roughness={0.9} />
+      </mesh>
+      {/* Pedestal Candles */}
+      {[-0.26, 0.26].map((x, idx) => (
+        <group key={`pedcandle-${idx}`} position={[x, 1.05, -0.26]}>
+          <mesh position={[0, 0.08, 0]}>
+            <cylinderGeometry args={[0.02, 0.02, 0.16, 6]} />
+            <meshStandardMaterial color="#eeddcc" roughness={0.9} />
+          </mesh>
+        </group>
+      ))}
+    </group>
+  );
+}
 
 // ─── Creepy Main Entrance Door ────────────────────────────────────────────────
 function CreepyMainDoor({ hasKey, bloodTex }: { hasKey: boolean; bloodTex: THREE.Texture }) {
   return (
     <group position={[0, 0, -19.85]}>
       {/* Heavy Gothic Stone Outer Arch Frame */}
-      {/* Left Frame Post */}
-      <mesh position={[-2.6, 2.5, 0]} castShadow receiveShadow>
+      <mesh position={[-2.6, 2.5, 0]} receiveShadow>
         <boxGeometry args={[0.6, 5.2, 0.6]} />
         <meshStandardMaterial color="#1a1816" roughness={0.9} />
       </mesh>
-      {/* Right Frame Post */}
-      <mesh position={[2.6, 2.5, 0]} castShadow receiveShadow>
+      <mesh position={[2.6, 2.5, 0]} receiveShadow>
         <boxGeometry args={[0.6, 5.2, 0.6]} />
         <meshStandardMaterial color="#1a1816" roughness={0.9} />
       </mesh>
-      {/* Top Header Beam */}
-      <mesh position={[0, 5.2, 0]} castShadow receiveShadow>
+      <mesh position={[0, 5.2, 0]} receiveShadow>
         <boxGeometry args={[5.8, 0.6, 0.7]} />
         <meshStandardMaterial color="#1a1816" roughness={0.9} />
       </mesh>
-      {/* Gothic Keystone Emblem at Arch Peak */}
-      <mesh position={[0, 5.6, 0.1]} castShadow>
+      <mesh position={[0, 5.6, 0.1]}>
         <boxGeometry args={[0.9, 0.7, 0.8]} />
         <meshStandardMaterial color="#2c2824" roughness={0.8} />
       </mesh>
-      {/* Skull detail on Keystone */}
-      <mesh position={[0, 5.6, 0.52]} castShadow>
-        <sphereGeometry args={[0.2, 12, 12]} />
+      <mesh position={[0, 5.6, 0.52]}>
+        <sphereGeometry args={[0.2, 8, 8]} />
         <meshStandardMaterial color="#0d0b0a" roughness={0.5} />
       </mesh>
 
-      {/* Double Gothic Doors (Left & Right Leaves) */}
-      {/* Left Door Leaf */}
+      {/* Double Gothic Doors */}
       <group position={[-1.18, 2.4, 0]}>
-        <mesh castShadow receiveShadow>
+        <mesh receiveShadow>
           <boxGeometry args={[2.3, 4.8, 0.2]} />
           <meshStandardMaterial color="#23130c" roughness={0.8} />
         </mesh>
-        {/* Recessed Panels */}
-        <mesh position={[0, 1.1, 0.05]} castShadow>
-          <boxGeometry args={[1.7, 1.8, 0.06]} />
-          <meshStandardMaterial color="#180c07" roughness={0.9} />
-        </mesh>
-        <mesh position={[0, -1.1, 0.05]} castShadow>
-          <boxGeometry args={[1.7, 1.8, 0.06]} />
-          <meshStandardMaterial color="#180c07" roughness={0.9} />
-        </mesh>
-        {/* Vertical Wood Plank Grooves */}
-        {[-0.6, 0, 0.6].map((x, idx) => (
-          <mesh key={`l-plank-${idx}`} position={[x, 0, 0.11]}>
-            <boxGeometry args={[0.04, 4.6, 0.02]} />
-            <meshStandardMaterial color="#0f0704" roughness={1} />
-          </mesh>
-        ))}
-        {/* Iron Strap Hinges */}
-        {[1.3, -1.3].map((y, idx) => (
-          <group key={`l-hinge-${idx}`} position={[-0.3, y, 0.12]}>
-            <mesh castShadow>
-              <boxGeometry args={[1.4, 0.14, 0.04]} />
-              <meshStandardMaterial color="#111111" metalness={0.8} roughness={0.4} />
-            </mesh>
-            {[-0.5, 0, 0.5].map((rx, rIdx) => (
-              <mesh key={`r-${rIdx}`} position={[rx, 0, 0.03]}>
-                <sphereGeometry args={[0.03, 8, 8]} />
-                <meshStandardMaterial color="#222222" metalness={0.9} roughness={0.3} />
-              </mesh>
-            ))}
-          </group>
-        ))}
-        {/* Iron Ring Handle / Knocker */}
-        <mesh position={[0.8, 0, 0.14]} castShadow>
-          <torusGeometry args={[0.16, 0.03, 10, 20]} />
+        <mesh position={[0.8, 0, 0.14]}>
+          <torusGeometry args={[0.16, 0.03, 8, 12]} />
           <meshStandardMaterial color="#1a1a1a" metalness={0.95} roughness={0.2} />
         </mesh>
       </group>
 
-      {/* Right Door Leaf */}
       <group position={[1.18, 2.4, 0]}>
-        <mesh castShadow receiveShadow>
+        <mesh receiveShadow>
           <boxGeometry args={[2.3, 4.8, 0.2]} />
           <meshStandardMaterial color="#23130c" roughness={0.8} />
         </mesh>
-        {/* Recessed Panels */}
-        <mesh position={[0, 1.1, 0.05]} castShadow>
-          <boxGeometry args={[1.7, 1.8, 0.06]} />
-          <meshStandardMaterial color="#180c07" roughness={0.9} />
-        </mesh>
-        <mesh position={[0, -1.1, 0.05]} castShadow>
-          <boxGeometry args={[1.7, 1.8, 0.06]} />
-          <meshStandardMaterial color="#180c07" roughness={0.9} />
-        </mesh>
-        {/* Vertical Wood Plank Grooves */}
-        {[-0.6, 0, 0.6].map((x, idx) => (
-          <mesh key={`r-plank-${idx}`} position={[x, 0, 0.11]}>
-            <boxGeometry args={[0.04, 4.6, 0.02]} />
-            <meshStandardMaterial color="#0f0704" roughness={1} />
-          </mesh>
-        ))}
-        {/* Iron Strap Hinges */}
-        {[1.3, -1.3].map((y, idx) => (
-          <group key={`r-hinge-${idx}`} position={[0.3, y, 0.12]}>
-            <mesh castShadow>
-              <boxGeometry args={[1.4, 0.14, 0.04]} />
-              <meshStandardMaterial color="#111111" metalness={0.8} roughness={0.4} />
-            </mesh>
-            {[-0.5, 0, 0.5].map((rx, rIdx) => (
-              <mesh key={`rr-${rIdx}`} position={[rx, 0, 0.03]}>
-                <sphereGeometry args={[0.03, 8, 8]} />
-                <meshStandardMaterial color="#222222" metalness={0.9} roughness={0.3} />
-              </mesh>
-            ))}
-          </group>
-        ))}
-        {/* Iron Ring Handle / Knocker */}
-        <mesh position={[-0.8, 0, 0.14]} castShadow>
-          <torusGeometry args={[0.16, 0.03, 10, 20]} />
+        <mesh position={[-0.8, 0, 0.14]}>
+          <torusGeometry args={[0.16, 0.03, 8, 12]} />
           <meshStandardMaterial color="#1a1a1a" metalness={0.95} roughness={0.2} />
         </mesh>
       </group>
 
       {/* Central Lockplate Escutcheon & Keyhole */}
       <group position={[0, 2.2, 0.14]}>
-        {/* Heavy Iron Lock Plate */}
-        <mesh castShadow>
+        <mesh>
           <boxGeometry args={[0.35, 0.7, 0.04]} />
           <meshStandardMaterial color="#151515" metalness={0.9} roughness={0.3} />
         </mesh>
-        {/* Keyhole Rim */}
         <mesh position={[0, 0.05, 0.025]}>
-          <circleGeometry args={[0.06, 16]} />
-          <meshStandardMaterial color={hasKey ? '#ffd700' : '#8b0000'} emissive={hasKey ? '#ffd700' : '#330000'} emissiveIntensity={hasKey ? 0.8 : 0.2} />
+          <circleGeometry args={[0.06, 12]} />
+          <meshStandardMaterial
+            color={hasKey ? '#ffd700' : '#8b0000'}
+            emissive={hasKey ? '#ffd700' : '#330000'}
+            emissiveIntensity={hasKey ? 0.8 : 0.2}
+          />
         </mesh>
-        {/* Keyhole Slit */}
-        <mesh position={[0, -0.02, 0.026]}>
-          <planeGeometry args={[0.03, 0.08]} />
-          <meshBasicMaterial color="#000000" />
-        </mesh>
-        {/* Ominous Keyhole Light Glow */}
-        <pointLight position={[0, 0, 0.3]} intensity={hasKey ? 12 : 4} distance={3} color={hasKey ? '#ffd700' : '#ff2200'} />
+        <pointLight position={[0, 0, 0.3]} intensity={hasKey ? 10 : 3} distance={3} color={hasKey ? '#ffd700' : '#ff2200'} castShadow={false} />
       </group>
 
       {/* Blood Stain Decal across Door */}
@@ -381,43 +489,173 @@ function CreepyMainDoor({ hasKey, bloodTex }: { hasKey: boolean; bloodTex: THREE
   );
 }
 
-// ─── Main Mansion Component ───────────────────────────────────────────────────
-export default function Mansion() {
-  const { hasKey, setHasKey, setInteractPrompt, setGameState, isKitchenJumpscareTriggered, triggerKitchenJumpscare } = useGameStore();
-  const flickLightRef = useRef<THREE.PointLight>(null);
-  const flickLight2Ref = useRef<THREE.PointLight>(null);
+// ─── Victorian Double Kitchen Door ───────────────────────────────────────────
+function InteractableKitchenDoor({ wallTex, woodTex }: { wallTex: THREE.Texture; woodTex: THREE.Texture }) {
+  const setInteractPrompt = useGameStore((s) => s.setInteractPrompt);
+  const [isOpen, setIsOpen] = useState(false);
+  const isOpenRef = useRef(false);
+  const canInteractRef = useRef(false);
 
-  const [canInteractKey, setCanInteractKey] = useState(false);
-  const [canInteractDoor, setCanInteractDoor] = useState(false);
+  const leftPivotRef = useRef<THREE.Group>(null);
+  const rightPivotRef = useRef<THREE.Group>(null);
 
-  const keyRef = useRef<Mesh>(null);
-  useFrame(() => {
-    if (keyRef.current) {
-      keyRef.current.rotation.y += 0.02;
-      keyRef.current.position.y = 5.5 + Math.sin(Date.now() * 0.005) * 0.1;
+  isOpenRef.current = isOpen;
+
+  const playDoorSound = () => {
+    if (typeof window !== 'undefined') {
+      const audio = new Audio('/stairs and doors.mp3');
+      audio.volume = 0.6;
+      audio.play().catch(() => {});
     }
-    if (flickLightRef.current) {
-      if (Math.random() > 0.9) {
-        flickLightRef.current.intensity = 5 + Math.random() * 40;
+  };
+
+  useFrame((_, rawDelta) => {
+    const delta = Math.min(rawDelta, 0.05);
+    const targetLeft = isOpen ? Math.PI * 0.48 : 0;
+    const targetRight = isOpen ? -Math.PI * 0.48 : 0;
+    const lerpFactor = Math.min(1, delta * 5.0);
+
+    if (leftPivotRef.current) {
+      const diff = targetLeft - leftPivotRef.current.rotation.y;
+      if (Math.abs(diff) > 0.002) {
+        leftPivotRef.current.rotation.y += diff * lerpFactor;
       }
     }
-    if (flickLight2Ref.current) {
-      if (Math.random() > 0.92) {
-        flickLight2Ref.current.intensity = 2 + Math.random() * 20;
+    if (rightPivotRef.current) {
+      const diff = targetRight - rightPivotRef.current.rotation.y;
+      if (Math.abs(diff) > 0.002) {
+        rightPivotRef.current.rotation.y += diff * lerpFactor;
       }
     }
   });
 
-  const [floorTex, wallTex, panelTex, bloodTex, tileTex, grungeWallTex] = useTexture([
+  useEffect(() => {
+    const handleKey = (evt: KeyboardEvent) => {
+      if (evt.code === 'KeyE' && canInteractRef.current) {
+        playDoorSound();
+        const next = !isOpenRef.current;
+        setIsOpen(next);
+        isOpenRef.current = next;
+        setInteractPrompt(next ? 'Press E to Close Door' : 'Press E to Open Door');
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [setInteractPrompt]);
+
+  return (
+    <group position={[-5, 0, -7.5]}>
+      {/* ── Wall Header Beam above Doorway (Y = 3.0 to 4.0, width 2.4m) ── */}
+      <RigidBody type="fixed" colliders="cuboid" position={[0, 3.5, 0]}>
+        <mesh receiveShadow>
+          <boxGeometry args={[0.5, 1.0, 2.4]} />
+          <meshStandardMaterial map={wallTex} roughness={0.9} />
+        </mesh>
+      </RigidBody>
+
+      {/* ── Timber Doorframe Trim ── */}
+      <mesh position={[0, 1.5, -1.2]} receiveShadow>
+        <boxGeometry args={[0.54, 3.0, 0.12]} />
+        <meshStandardMaterial color="#1a0f0a" map={woodTex} roughness={0.75} />
+      </mesh>
+      <mesh position={[0, 1.5, 1.2]} receiveShadow>
+        <boxGeometry args={[0.54, 3.0, 0.12]} />
+        <meshStandardMaterial color="#1a0f0a" map={woodTex} roughness={0.75} />
+      </mesh>
+      <mesh position={[0, 3.01, 0]} receiveShadow>
+        <boxGeometry args={[0.56, 0.12, 2.52]} />
+        <meshStandardMaterial color="#1a0f0a" map={woodTex} roughness={0.75} />
+      </mesh>
+
+      {/* ── Left Door Leaf ── */}
+      <group position={[0, 1.46, -1.14]} ref={leftPivotRef}>
+        <mesh position={[0, 0, 0.57]} receiveShadow>
+          <boxGeometry args={[0.08, 2.88, 1.13]} />
+          <meshStandardMaterial color="#2d180e" map={woodTex} roughness={0.7} />
+        </mesh>
+        <mesh position={[0.05, -0.05, 1.02]}>
+          <boxGeometry args={[0.012, 0.28, 0.06]} />
+          <meshStandardMaterial color="#967830" metalness={0.8} roughness={0.25} />
+        </mesh>
+      </group>
+
+      {/* ── Right Door Leaf ── */}
+      <group position={[0, 1.46, 1.14]} ref={rightPivotRef}>
+        <mesh position={[0, 0, -0.57]} receiveShadow>
+          <boxGeometry args={[0.08, 2.88, 1.13]} />
+          <meshStandardMaterial color="#2d180e" map={woodTex} roughness={0.7} />
+        </mesh>
+        <mesh position={[0.05, -0.05, -1.02]}>
+          <boxGeometry args={[0.012, 0.28, 0.06]} />
+          <meshStandardMaterial color="#967830" metalness={0.8} roughness={0.25} />
+        </mesh>
+      </group>
+
+      {/* ── Solid Doorway Barrier Collider (Active only when closed) ── */}
+      {!isOpen && (
+        <RigidBody type="fixed" colliders="cuboid" position={[0, 1.46, 0]}>
+          <mesh visible={false}>
+            <boxGeometry args={[0.3, 2.9, 2.3]} />
+          </mesh>
+        </RigidBody>
+      )}
+
+      {/* ── Interaction Trigger Zone ── */}
+      <RigidBody
+        type="fixed"
+        position={[0, 1.46, 0]}
+        sensor
+        onIntersectionEnter={(e) => {
+          if (e.other.rigidBodyObject?.name === 'player') {
+            canInteractRef.current = true;
+            setInteractPrompt(isOpenRef.current ? 'Press E to Close Door' : 'Press E to Open Door');
+          }
+        }}
+        onIntersectionExit={(e) => {
+          if (e.other.rigidBodyObject?.name === 'player') {
+            canInteractRef.current = false;
+            setInteractPrompt(null);
+          }
+        }}
+      >
+        <CuboidCollider args={[2.5, 1.5, 2.2]} />
+      </RigidBody>
+    </group>
+  );
+}
+
+// ─── Main Mansion Component ───────────────────────────────────────────────────
+export default function Mansion() {
+  const hasKey = useGameStore((s) => s.hasKey);
+  const setHasKey = useGameStore((s) => s.setHasKey);
+  const setInteractPrompt = useGameStore((s) => s.setInteractPrompt);
+  const setGameState = useGameStore((s) => s.setGameState);
+  const isKitchenJumpscareTriggered = useGameStore((s) => s.isKitchenJumpscareTriggered);
+  const triggerKitchenJumpscare = useGameStore((s) => s.triggerKitchenJumpscare);
+
+  const flickLightRef = useRef<THREE.PointLight>(null);
+  const flickLight2Ref = useRef<THREE.PointLight>(null);
+  const keyRef = useRef<Mesh>(null);
+
+  useFrame((state, rawDelta) => {
+    const delta = Math.min(rawDelta, 0.05);
+    if (keyRef.current) {
+      keyRef.current.rotation.y += delta * 1.5;
+      keyRef.current.position.y = 6.25 + Math.sin(state.clock.elapsedTime * 2.5) * 0.08;
+    }
+  });
+
+  const [floorTex, wallTex, panelTex, bloodTex, tileTex, grungeWallTex, doorWoodTex] = useTexture([
     '/textures/floor.png',
     '/textures/wallpaper.png',
     '/textures/panel.png',
     '/textures/bloody_carpet.png',
-    '/textures/floor.png', // reuse floor as tile for washrooms
+    '/textures/floor.png',
     '/textures/grunge_concrete_wall.jpg',
+    '/textures/rustic_wood_planks.jpg',
   ]);
 
-  [floorTex, wallTex, panelTex, bloodTex, tileTex, grungeWallTex].forEach((tex) => {
+  [floorTex, wallTex, panelTex, bloodTex, tileTex, grungeWallTex, doorWoodTex].forEach((tex) => {
     tex.wrapS = THREE.RepeatWrapping;
     tex.wrapT = THREE.RepeatWrapping;
   });
@@ -428,13 +666,20 @@ export default function Mansion() {
   bloodTex.repeat.set(4, 4);
   tileTex.repeat.set(3, 3);
   grungeWallTex.repeat.set(3, 2);
+  doorWoodTex.repeat.set(1.5, 3);
 
-  // Wall helper: a simple fixed RigidBody wall
+  // High-performance wall helper (receives shadows, doesn't cast)
   const Wall = ({
-    pos, size, texMap = wallTex,
-  }: { pos: [number, number, number]; size: [number, number, number]; texMap?: THREE.Texture }) => (
+    pos,
+    size,
+    texMap = wallTex,
+  }: {
+    pos: [number, number, number];
+    size: [number, number, number];
+    texMap?: THREE.Texture;
+  }) => (
     <RigidBody type="fixed" colliders="cuboid" position={pos}>
-      <mesh receiveShadow castShadow>
+      <mesh receiveShadow>
         <boxGeometry args={size} />
         <meshStandardMaterial map={texMap} roughness={0.9} />
       </mesh>
@@ -443,227 +688,274 @@ export default function Mansion() {
 
   return (
     <group>
-      {/* ═══ LIGHTING & CREEPY LOBBY LIGHTS ════════════════════════════════ */}
+      {/* ═══ ATMOSPHERIC LIGHTING ════════════════════════════════════════════ */}
       <LobbyLights />
-      {/* Bedroom 1 */}
-      <pointLight position={[-8, 8.5, 18]} intensity={10} distance={10} color="#ffaa44" />
-      {/* Bedroom 2 */}
-      <pointLight ref={flickLight2Ref} position={[8, 8.5, 18]} intensity={15} distance={10} color="#ff6633" />
+      {/* Upper Landing Chandelier */}
+      <pointLight position={[0, 8.8, 22.0]} intensity={16} distance={14} color="#ffaa55" castShadow={false} />
+      {/* Washroom 1 (NW) */}
+      <pointLight position={[-10.75, 8.5, 4.0]} intensity={7} distance={10} color="#a0e0e8" castShadow={false} />
+      {/* Bedroom 1 (SW - Master) */}
+      <pointLight ref={flickLightRef} position={[-10.75, 8.5, 19.0]} intensity={14} distance={12} color="#ff9944" castShadow={false} />
+      {/* Washroom 2 (NE) */}
+      <pointLight position={[10.75, 8.5, 4.0]} intensity={6} distance={10} color="#b8e8b0" castShadow={false} />
+      {/* Bedroom 2 (SE - Ritual) */}
+      <pointLight ref={flickLight2Ref} position={[10.75, 8.5, 19.0]} intensity={14} distance={12} color="#ff4422" castShadow={false} />
+      {/* Front Balcony Key area */}
+      <pointLight position={[0, 7.5, 2.0]} intensity={10} distance={9} color="#ffd700" castShadow={false} />
 
-      {/* ═══ GROUND FLOOR ════════════════════════════════════════════════════ */}
+      {/* ═══ GROUND FLOOR SLAB ═══════════════════════════════════════════════ */}
       <RigidBody type="fixed" colliders="cuboid">
-        <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-          <planeGeometry args={[30, 40]} />
+        <mesh position={[0, 0, 2.5]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+          <planeGeometry args={[32, 48]} />
           <meshStandardMaterial map={bloodTex} roughness={0.9} />
         </mesh>
       </RigidBody>
 
-      {/* ═══ GRAND STAIRCASE ════════════════════════════════════════════════ */}
+      {/* ═══ SMOOTH 20-STEP GRAND STAIRCASE (Z = 9.0 to 19.0, Y = 0 to 5) ═══ */}
       <group>
-        {Array.from({ length: 10 }).map((_, i) => (
-          <mesh key={`stair-${i}`} position={[0, i * 0.5 + 0.25, 10 + i]} receiveShadow castShadow>
-            <boxGeometry args={[8, 0.5, 1]} />
-            <meshStandardMaterial map={floorTex} roughness={0.5} />
-          </mesh>
+        {Array.from({ length: 20 }).map((_, i) => {
+          const stepZ = 9.0 + i * 0.5 + 0.25;
+          const stepH = (i + 1) * 0.25;
+          const stepY = stepH / 2;
+          return (
+            <group key={`grand-stair-${i}`}>
+              {/* Solid wooden riser and tread */}
+              <mesh position={[0, stepY, stepZ]} receiveShadow>
+                <boxGeometry args={[8.0, stepH, 0.5]} />
+                <meshStandardMaterial map={floorTex} roughness={0.5} />
+              </mesh>
+              {/* Crimson velvet carpet runner down center */}
+              <mesh position={[0, stepH + 0.005, stepZ]} receiveShadow>
+                <boxGeometry args={[3.4, 0.02, 0.51]} />
+                <meshStandardMaterial color="#6a040f" roughness={0.85} />
+              </mesh>
+            </group>
+          );
+        })}
+
+        {/* Carved Wooden Newel Posts at Bottom of Stairs */}
+        {[-3.9, 3.9].map((x, idx) => (
+          <group key={`bottom-newel-${idx}`} position={[x, 0, 9.2]}>
+            <mesh position={[0, 0.7, 0]}>
+              <boxGeometry args={[0.25, 1.4, 0.25]} />
+              <meshStandardMaterial color="#2d1505" roughness={0.6} />
+            </mesh>
+            <mesh position={[0, 1.45, 0]}>
+              <sphereGeometry args={[0.12, 8, 8]} />
+              <meshStandardMaterial color="#3d1d07" roughness={0.5} metalness={0.2} />
+            </mesh>
+          </group>
+        ))}
+
+        {/* Carved Wooden Newel Posts at Top of Stairs */}
+        {[-3.9, 3.9].map((x, idx) => (
+          <group key={`top-newel-${idx}`} position={[x, 5.0, 18.8]}>
+            <mesh position={[0, 0.7, 0]}>
+              <boxGeometry args={[0.25, 1.4, 0.25]} />
+              <meshStandardMaterial color="#2d1505" roughness={0.6} />
+            </mesh>
+            <mesh position={[0, 1.45, 0]}>
+              <sphereGeometry args={[0.12, 8, 8]} />
+              <meshStandardMaterial color="#3d1d07" roughness={0.5} metalness={0.2} />
+            </mesh>
+          </group>
         ))}
       </group>
 
-      {/* Invisible Ramp Collider */}
-      <RigidBody type="fixed" colliders={false} position={[0, 2.475, 14.25]} rotation={[-Math.atan2(5.05, 10.5), 0, 0]}>
-        <CuboidCollider args={[4, 0.1, 5.825]} friction={0} />
+      {/* Seamless Staircase Invisible Ramp Collider */}
+      <RigidBody
+        type="fixed"
+        colliders={false}
+        position={[0, 2.5, 14.0]}
+        rotation={[-Math.atan2(5.0, 10.0), 0, 0]}
+      >
+        <CuboidCollider args={[4.0, 0.08, 5.59]} friction={0} />
       </RigidBody>
 
-      {/* ═══ SECOND FLOOR PLATFORM (stairwell opening x=-4.5 to 4.5, z=9.5 to 19.5) ═══ */}
-      {/* 1) South section — full width, z=-5 to 9.5 */}
-      <RigidBody type="fixed" colliders="cuboid" position={[0, 4.75, 2.25]}>
-        <mesh receiveShadow castShadow>
-          <boxGeometry args={[30, 0.5, 14.5]} />
-          <meshStandardMaterial map={floorTex} roughness={0.5} />
-        </mesh>
-      </RigidBody>
-      {/* 2) Left wing — x=-15 to -4.5, z=9.5 to 25.5 */}
-      <RigidBody type="fixed" colliders="cuboid" position={[-9.75, 4.75, 17.5]}>
-        <mesh receiveShadow castShadow>
-          <boxGeometry args={[10.5, 0.5, 16]} />
-          <meshStandardMaterial map={floorTex} roughness={0.5} />
-        </mesh>
-      </RigidBody>
-      {/* 3) Right wing — x=4.5 to 15, z=9.5 to 25.5 */}
-      <RigidBody type="fixed" colliders="cuboid" position={[9.75, 4.75, 17.5]}>
-        <mesh receiveShadow castShadow>
-          <boxGeometry args={[10.5, 0.5, 16]} />
-          <meshStandardMaterial map={floorTex} roughness={0.5} />
-        </mesh>
-      </RigidBody>
-      {/* 4) Back landing behind stairwell — x=-4.5 to 4.5, z=19.5 to 25.5 */}
-      <RigidBody type="fixed" colliders="cuboid" position={[0, 4.75, 22.5]}>
-        <mesh receiveShadow castShadow>
-          <boxGeometry args={[9, 0.5, 6]} />
-          <meshStandardMaterial map={floorTex} roughness={0.5} />
+      {/* ═══ CONTINUOUS 2ND FLOOR PLATFORM (Y = 4.75, top at Y = 5.0) ═══════ */}
+      {/* 1) West Wing Floor */}
+      <RigidBody type="fixed" colliders="cuboid" position={[-9.5, 4.75, 10.75]}>
+        <mesh receiveShadow>
+          <boxGeometry args={[11.0, 0.5, 29.5]} />
+          <meshStandardMaterial map={floorTex} roughness={0.55} />
         </mesh>
       </RigidBody>
 
-      {/* ═══ OUTER WALLS (full height) ══════════════════════════════════════ */}
-      {/* Left wall */}
-      <Wall pos={[-15.5, 5, 2.5]} size={[1, 10, 45]} />
-      {/* Right wall */}
-      <Wall pos={[15.5, 5, 2.5]} size={[1, 10, 45]} />
-      {/* Front wall */}
+      {/* 2) East Wing Floor */}
+      <RigidBody type="fixed" colliders="cuboid" position={[9.5, 4.75, 10.75]}>
+        <mesh receiveShadow>
+          <boxGeometry args={[11.0, 0.5, 29.5]} />
+          <meshStandardMaterial map={floorTex} roughness={0.55} />
+        </mesh>
+      </RigidBody>
+
+      {/* 3) Back Landing Gallery Floor */}
+      <RigidBody type="fixed" colliders="cuboid" position={[0, 4.75, 22.25]}>
+        <mesh receiveShadow>
+          <boxGeometry args={[8.0, 0.5, 6.5]} />
+          <meshStandardMaterial map={floorTex} roughness={0.55} />
+        </mesh>
+      </RigidBody>
+
+      {/* 4) Front Balcony Floor */}
+      <RigidBody type="fixed" colliders="cuboid" position={[0, 4.75, 2.5]}>
+        <mesh receiveShadow>
+          <boxGeometry args={[8.0, 0.5, 13.0]} />
+          <meshStandardMaterial map={floorTex} roughness={0.55} />
+        </mesh>
+      </RigidBody>
+
+      {/* ═══ 2ND FLOOR SAFETY RAILINGS AROUND CENTRAL STAIR OPENING ═════════ */}
+      <GothicRailing position={[-4.05, 5.0, 14.0]} length={10.0} rotY={0} />
+      <GothicRailing position={[4.05, 5.0, 14.0]} length={10.0} rotY={0} />
+      <GothicRailing position={[0, 5.0, -4.0]} length={13.0} rotY={Math.PI / 2} />
+
+      {/* ═══ FULL HEIGHT OUTER MANSION WALLS (Y = 0 to 10) ═══════════════════ */}
+      <Wall pos={[-15.5, 5, 2.5]} size={[1, 10, 47]} />
+      <Wall pos={[15.5, 5, 2.5]} size={[1, 10, 47]} />
       <Wall pos={[0, 5, -20.5]} size={[32, 10, 1]} />
-      {/* Back wall */}
       <Wall pos={[0, 5, 25.5]} size={[32, 10, 1]} />
 
-      {/* ═══ GROUND FLOOR INNER WALLS ═══════════════════════════════════════ */}
-      {/* Kitchen Walls (Left side ground floor) with grunge concrete */}
+      {/* ═══ GROUND FLOOR INNER WALLS & KITCHEN ═══════════════════════════════ */}
       <Wall pos={[-10, 2, -5]} size={[10, 4, 0.5]} texMap={grungeWallTex} />
-      <Wall pos={[-5, 2, -15]} size={[0.5, 4, 10]} texMap={grungeWallTex} />
-      
-      {/* Narrowed Kitchen Entrance */}
-      <Wall pos={[-5, 2, -9.25]} size={[0.5, 4, 1.5]} texMap={grungeWallTex} />
-      <Wall pos={[-5, 2, -5.75]} size={[0.5, 4, 1.5]} texMap={grungeWallTex} />
-      
+      <Wall pos={[-5, 2, -14.35]} size={[0.5, 4, 11.3]} texMap={grungeWallTex} />
+      <Wall pos={[-5, 2, -5.65]} size={[0.5, 4, 1.3]} texMap={grungeWallTex} />
       <Wall pos={[-5, 2, 2.5]} size={[0.5, 4, 15]} />
       <Wall pos={[5, 2, -5]} size={[0.5, 4, 30]} />
-      
-      {/* Kitchen Door Area */}
-      <InteractableKitchenGate wallTex={wallTex} />
 
-      {/* The Precise Jumpscare Sensor - Now covers the whole kitchen */}
+      {/* Victorian Double Kitchen Door */}
+      <InteractableKitchenDoor wallTex={grungeWallTex} woodTex={doorWoodTex} />
+
+      {/* Kitchen Jumpscare Sensor - Ground Floor Kitchen Entry */}
       {!isKitchenJumpscareTriggered && (
-        <RigidBody 
-          type="fixed" 
-          colliders="cuboid" 
-          position={[-10, 2, -10]} 
-          sensor
-          onIntersectionEnter={(e) => {
-            // Trigger jumpscare for any intersection (since player is the only moving body)
-            triggerKitchenJumpscare();
-            
-            // Play creaky door sound when entering
-            if (typeof window !== 'undefined') {
-              const audio = new Audio('/stairs and doors.mp3');
-              audio.volume = 0.5;
-              audio.play().catch(() => {});
-            }
-          }}
+        <RigidBody
+          type="fixed"
+          colliders={false}
+          position={[-10, 2, -12.5]}
         >
-          <mesh visible={false}>
-            <boxGeometry args={[9, 4, 9]} />
-          </mesh>
+          <CuboidCollider
+            args={[4.8, 2.0, 7.3]}
+            sensor
+            onIntersectionEnter={(e) => {
+              if (e.other.rigidBodyObject?.name === 'player') {
+                const store = useGameStore.getState();
+                if (!store.isKitchenJumpscareTriggered) {
+                  store.triggerKitchenJumpscare();
+                }
+              }
+            }}
+          />
         </RigidBody>
       )}
 
-      {/* Master Survival Horror Kitchen (z = -15 to -5, x = -15 to -5) */}
-      <HorrorKitchen position={[-10, 0, -10]} />
+      {/* Ground Floor Horror Kitchen */}
+      <HorrorKitchen position={[-10, 0, -12.5]} />
 
-      {/* ═══ SECOND FLOOR LAYOUT ════════════════════════════════════════════
-          Central Corridor: x = -4.5 to +4.5 (100% open for stairwell at z=9.5 to 19.5)
-          Left Rooms (Washroom 1 & Bedroom 1): x = -15 to -4.5
-          Right Rooms (Washroom 2 & Bedroom 2): x = 4.5 to 15
-      ══════════════════════════════════════════════════════════════════════ */}
+      {/* ═══ 2ND FLOOR INTERIOR WALLS & ARCHWAYS (Y = 5.0 to 10.0) ═══════════ */}
+      {/* North-South Dividing Walls */}
+      <Wall pos={[-10.75, 7.5, 12.5]} size={[8.5, 5.0, 0.3]} />
+      <Wall pos={[10.75, 7.5, 12.5]} size={[8.5, 5.0, 0.3]} />
 
-      {/* ─── Left Corridor Wall (x = -4.5) ─────────────────────────────────── */}
-      <Wall pos={[-4.5, 7.5, 6.25]} size={[0.3, 5, 2.5]} />
-      <Wall pos={[-4.5, 9.25, 9]} size={[0.3, 1.5, 3]} /> {/* Washroom 1 door header */}
-      <Wall pos={[-4.5, 7.5, 12.25]} size={[0.3, 5, 3.5]} />
-      <Wall pos={[-4.5, 9.25, 15.5]} size={[0.3, 1.5, 3]} /> {/* Bedroom 1 door header */}
-      <Wall pos={[-4.5, 7.5, 21.25]} size={[0.3, 5, 8.5]} />
+      {/* Front Enclosing Walls for 2F Washrooms */}
+      <Wall pos={[-10.75, 7.5, -4.0]} size={[8.5, 5.0, 0.3]} />
+      <Wall pos={[10.75, 7.5, -4.0]} size={[8.5, 5.0, 0.3]} />
 
-      {/* ─── Right Corridor Wall (x = +4.5) ────────────────────────────────── */}
-      <Wall pos={[4.5, 7.5, 6.25]} size={[0.3, 5, 2.5]} />
-      <Wall pos={[4.5, 9.25, 9]} size={[0.3, 1.5, 3]} /> {/* Washroom 2 door header */}
-      <Wall pos={[4.5, 7.5, 12.25]} size={[0.3, 5, 3.5]} />
-      <Wall pos={[4.5, 9.25, 15.5]} size={[0.3, 1.5, 3]} /> {/* Bedroom 2 door header */}
-      <Wall pos={[4.5, 7.5, 21.25]} size={[0.3, 5, 8.5]} />
+      {/* West Corridor Wall */}
+      <Wall pos={[-6.5, 7.5, 0.5]} size={[0.3, 5.0, 9.0]} />
+      <Wall pos={[-6.5, 9.0, 6.5]} size={[0.3, 2.0, 3.0]} />
+      <Wall pos={[-6.5, 7.5, 11.75]} size={[0.3, 5.0, 7.5]} />
+      <Wall pos={[-6.5, 9.0, 17.0]} size={[0.3, 2.0, 3.0]} />
+      <Wall pos={[-6.5, 7.5, 20.0]} size={[0.3, 5.0, 3.0]} />
+      <Wall pos={[-6.5, 9.0, 23.0]} size={[0.3, 2.0, 3.0]} />
+      <Wall pos={[-6.5, 7.5, 25.0]} size={[0.3, 5.0, 1.0]} />
 
-      {/* ─── WASHROOM 1 (Left side, z=5 to 12) ───────────────────────────── */}
-      {/* North wall dividing Washroom 1 & Bedroom 1 */}
-      <Wall pos={[-9.75, 7.5, 12]} size={[10.2, 5, 0.3]} />
-      {/* Washroom 1 tile floor */}
-      <mesh position={[-9.75, 5.02, 8.5]} receiveShadow>
-        <boxGeometry args={[10.2, 0.04, 7]} />
-        <meshStandardMaterial map={tileTex} roughness={0.3} color="#d0e4ec" />
+      {/* East Corridor Wall */}
+      <Wall pos={[6.5, 7.5, 0.5]} size={[0.3, 5.0, 9.0]} />
+      <Wall pos={[6.5, 9.0, 6.5]} size={[0.3, 2.0, 3.0]} />
+      <Wall pos={[6.5, 7.5, 11.75]} size={[0.3, 5.0, 7.5]} />
+      <Wall pos={[6.5, 9.0, 17.0]} size={[0.3, 2.0, 3.0]} />
+      <Wall pos={[6.5, 7.5, 20.0]} size={[0.3, 5.0, 3.0]} />
+      <Wall pos={[6.5, 9.0, 23.0]} size={[0.3, 2.0, 3.0]} />
+      <Wall pos={[6.5, 7.5, 25.0]} size={[0.3, 5.0, 1.0]} />
+
+      {/* ═══ 4 FULLY FURNISHED 2ND FLOOR ROOMS ═══════════════════════════════ */}
+      {/* ROOM 1: WASHROOM 1 (North-West Blood Bath) */}
+      <mesh position={[-10.75, 5.02, 4.25]} receiveShadow>
+        <boxGeometry args={[8.5, 0.04, 16.5]} />
+        <meshStandardMaterial map={tileTex} roughness={0.3} color="#bcd2db" />
       </mesh>
-      {/* Mirror on west wall of washroom 1 */}
-      <WashroomMirror position={[-14.8, 7.2, 8.5]} rotY={Math.PI / 2} />
-      {/* Toilet */}
-      <Toilet position={[-12, 5, 11]} />
-      {/* Sink */}
-      <Sink position={[-10, 5, 11.5]} />
-      {/* Dim washroom light */}
-      <pointLight position={[-9.75, 8.8, 8.5]} intensity={6} distance={8} color="#ffe0c8" />
+      <ClawfootBathtub position={[-12.5, 5.0, 0.0]} rotY={0} bloody={true} />
+      <WashroomMirror position={[-14.8, 7.2, 6.5]} rotY={Math.PI / 2} />
+      <VictorianToilet position={[-13.5, 5.0, 10.0]} rotY={Math.PI / 2} />
+      <PedestalSink position={[-10.5, 5.0, 11.5]} rotY={Math.PI} />
 
-      {/* ─── WASHROOM 2 (Right side, z=5 to 12) ──────────────────────────── */}
-      {/* North wall dividing Washroom 2 & Bedroom 2 */}
-      <Wall pos={[9.75, 7.5, 12]} size={[10.2, 5, 0.3]} />
-      {/* Washroom 2 tile floor */}
-      <mesh position={[9.75, 5.02, 8.5]} receiveShadow>
-        <boxGeometry args={[10.2, 0.04, 7]} />
-        <meshStandardMaterial map={tileTex} roughness={0.3} color="#d0e4ec" />
+      {/* ROOM 2: BEDROOM 1 (South-West Master Victorian) */}
+      <FourPosterBed position={[-11.0, 5.0, 20.0]} rotY={0} />
+      <VictorianFireplace position={[-14.8, 5.0, 16.0]} rotY={Math.PI / 2} />
+      <AntiqueArmoire position={[-14.5, 5.0, 23.5]} rotY={Math.PI / 2} />
+      <VictorianDesk position={[-8.5, 5.0, 14.5]} rotY={-Math.PI / 2} />
+      <mesh position={[-11.0, 7.5, 25.2]}>
+        <boxGeometry args={[2.0, 2.5, 0.06]} />
+        <meshStandardMaterial color="#1a0a00" roughness={0.8} />
       </mesh>
-      {/* Mirror on east wall of washroom 2 */}
-      <WashroomMirror position={[14.8, 7.2, 8.5]} rotY={-Math.PI / 2} />
-      {/* Toilet */}
-      <Toilet position={[12, 5, 11]} />
-      {/* Sink */}
-      <Sink position={[10, 5, 11.5]} />
-      <pointLight position={[9.75, 8.8, 8.5]} intensity={6} distance={8} color="#ffe0c8" />
-
-      {/* ─── BEDROOM 1 (Left, z=12 to 25.5) ──────────────────────────────── */}
-      <Bed position={[-10, 5, 20]} rotY={0} />
-      <Desk position={[-12, 5, 13.5]} />
-      <mesh position={[-9.75, 7.5, 25.2]} castShadow>
-        <boxGeometry args={[1.2, 1.6, 0.05]} />
-        <meshStandardMaterial color="#1a0a00" roughness={1} />
+      <mesh position={[-11.0, 7.5, 25.24]}>
+        <planeGeometry args={[1.7, 2.2]} />
+        <meshStandardMaterial color="#2d1508" roughness={0.6} />
       </mesh>
 
-      {/* ─── BEDROOM 2 (Right, z=12 to 25.5) ─────────────────────────────── */}
-      <Bed position={[10, 5, 20]} rotY={Math.PI} />
-      <mesh position={[8, 5.38, 14]} castShadow receiveShadow rotation={[0, 0.4, 0.2]}>
-        <boxGeometry args={[0.4, 0.06, 0.4]} />
-        <meshStandardMaterial color="#5c3010" roughness={0.9} />
+      {/* ROOM 3: WASHROOM 2 (North-East Medical Restroom) */}
+      <mesh position={[10.75, 5.02, 4.25]} receiveShadow>
+        <boxGeometry args={[8.5, 0.04, 16.5]} />
+        <meshStandardMaterial map={tileTex} roughness={0.3} color="#bcd2db" />
       </mesh>
-      <mesh position={[8, 5.6, 14.2]} castShadow rotation={[0.3, 0.4, 0]}>
-        <boxGeometry args={[0.08, 0.5, 0.06]} />
-        <meshStandardMaterial color="#5c3010" roughness={0.9} />
+      <ClawfootBathtub position={[12.5, 5.0, 0.0]} rotY={0} bloody={false} />
+      <WashroomMirror position={[14.8, 7.2, 6.5]} rotY={-Math.PI / 2} />
+      <VictorianToilet position={[13.5, 5.0, 10.0]} rotY={-Math.PI / 2} />
+      <PedestalSink position={[10.5, 5.0, 11.5]} rotY={Math.PI} />
+
+      {/* ROOM 4: BEDROOM 2 (South-East Occult Ritual Bedroom) */}
+      <OccultRitualCircle position={[10.5, 5.0, 18.5]} />
+      <GothicBookshelf position={[14.8, 5.0, 15.0]} rotY={-Math.PI / 2} />
+      <mesh position={[11.0, 5.35, 23.0]} receiveShadow>
+        <boxGeometry args={[1.6, 0.7, 2.2]} />
+        <meshStandardMaterial color="#221008" roughness={0.9} />
       </mesh>
-      <mesh position={[14.8, 7, 16]} rotation={[0, Math.PI / 2, 0]}>
-        <planeGeometry args={[3, 2]} />
-        <meshStandardMaterial map={bloodTex} transparent opacity={0.7} />
+      <mesh position={[11.0, 5.72, 23.0]}>
+        <boxGeometry args={[1.5, 0.1, 2.0]} />
+        <meshStandardMaterial color="#400508" roughness={0.9} />
+      </mesh>
+      <mesh position={[10.5, 7.8, 25.2]}>
+        <boxGeometry args={[1.5, 1.5, 0.04]} />
+        <meshStandardMaterial color="#300000" emissive="#200000" emissiveIntensity={0.5} />
       </mesh>
 
-      {/* ─── HALLWAY / CORRIDOR (between washrooms and bedrooms) ─────────── */}
-      {/* Corridor is open — just the floor slab covers it */}
+      {/* UPPER GRAND LANDING GALLERY */}
+      <mesh position={[0, 7.8, 25.2]}>
+        <boxGeometry args={[3.2, 4.0, 0.08]} />
+        <meshStandardMaterial color="#1a1510" roughness={0.8} />
+      </mesh>
+      <mesh position={[0, 7.8, 25.25]}>
+        <planeGeometry args={[2.8, 3.6]} />
+        <meshStandardMaterial color="#102030" emissive="#051020" emissiveIntensity={0.6} />
+      </mesh>
 
-      {/* ─── SECOND FLOOR INNER BALCONY RAILING (decorative low walls) ───── */}
-      {/* Rail overlooking stairs — south edge of 2nd floor */}
-      <Wall pos={[0, 5.65, 5.15]} size={[30, 0.3, 0.1]} />
+      {/* ═══ FRONT BALCONY & GOLDEN HIDDEN KEY ════════════════════════════════ */}
+      <KeyPedestal position={[0, 5.0, 2.0]} />
 
-      {/* ─── CEILING ──────────────────────────────────────────────────────── */}
-      <RigidBody type="fixed" colliders="cuboid" position={[0, 10, 2.5]}>
-        <mesh receiveShadow castShadow>
-          <boxGeometry args={[32, 1, 45]} />
-          <meshStandardMaterial map={panelTex} roughness={0.8} />
-        </mesh>
-      </RigidBody>
-
-      {/* ═══ INTERACTABLES ══════════════════════════════════════════════════ */}
-      {/* Hidden Key on 2nd floor front balcony */}
+      {/* Floating Glowing Key */}
       {!hasKey && (
         <RigidBody
           type="fixed"
-          colliders="hull"
-          position={[0, 5.5, 6]}
+          colliders="cuboid"
+          position={[0, 6.2, 2.0]}
           sensor
           onIntersectionEnter={(e) => {
             if (e.other.rigidBodyObject?.name === 'player') {
-              setCanInteractKey(true);
-              setInteractPrompt('Press E to pick up Key');
+              setInteractPrompt('Press E to Pick Up Gate Key');
               const handleKey = (evt: KeyboardEvent) => {
                 if (evt.code === 'KeyE') {
                   setHasKey(true);
                   setInteractPrompt(null);
-                  setCanInteractKey(false);
                   window.removeEventListener('keydown', handleKey);
                 }
               };
@@ -672,23 +964,58 @@ export default function Mansion() {
           }}
           onIntersectionExit={(e) => {
             if (e.other.rigidBodyObject?.name === 'player') {
-              setCanInteractKey(false);
               setInteractPrompt(null);
             }
           }}
         >
-          <mesh ref={keyRef} castShadow>
-            <boxGeometry args={[0.5, 0.2, 0.5]} />
-            <meshStandardMaterial color="gold" emissive="gold" emissiveIntensity={0.5} />
-            <pointLight distance={3} intensity={5} color="gold" />
-          </mesh>
+          <group ref={keyRef}>
+            <mesh>
+              <torusGeometry args={[0.18, 0.04, 8, 14]} />
+              <meshStandardMaterial
+                color="#ffd700"
+                metalness={0.95}
+                roughness={0.15}
+                emissive="#ffd700"
+                emissiveIntensity={0.6}
+              />
+            </mesh>
+            <mesh position={[0, -0.32, 0]}>
+              <cylinderGeometry args={[0.035, 0.035, 0.45, 8]} />
+              <meshStandardMaterial
+                color="#ffd700"
+                metalness={0.95}
+                roughness={0.15}
+                emissive="#ffd700"
+                emissiveIntensity={0.6}
+              />
+            </mesh>
+            <mesh position={[0.08, -0.45, 0]}>
+              <boxGeometry args={[0.14, 0.18, 0.05]} />
+              <meshStandardMaterial
+                color="#ffd700"
+                metalness={0.95}
+                roughness={0.15}
+                emissive="#ffd700"
+                emissiveIntensity={0.6}
+              />
+            </mesh>
+            <pointLight distance={3} intensity={6} color="#ffd700" castShadow={false} />
+          </group>
+          <CuboidCollider args={[1.6, 1.6, 1.6]} />
         </RigidBody>
       )}
 
-      {/* Detailed Creepy Main Entrance Gate / Door */}
+      {/* ═══ MANSION CEILING ═════════════════════════════════════════════════ */}
+      <RigidBody type="fixed" colliders="cuboid" position={[0, 10, 2.5]}>
+        <mesh receiveShadow>
+          <boxGeometry args={[32, 1, 47]} />
+          <meshStandardMaterial map={panelTex} roughness={0.8} />
+        </mesh>
+      </RigidBody>
+
+      {/* ═══ DETAILED MAIN ENTRANCE DOOR & ESCAPE TRIGGER ════════════════════ */}
       <CreepyMainDoor hasKey={hasKey} bloodTex={bloodTex} />
 
-      {/* Main Door Collision & Sensor Trigger */}
       <RigidBody
         type="fixed"
         colliders="cuboid"
@@ -696,8 +1023,7 @@ export default function Mansion() {
         sensor
         onIntersectionEnter={(e) => {
           if (e.other.rigidBodyObject?.name === 'player') {
-            setCanInteractDoor(true);
-            setInteractPrompt(hasKey ? 'Press E to Escape' : 'Locked. Find the Key.');
+            setInteractPrompt(hasKey ? 'Press E to Escape Mansion' : 'Grand Gate is Locked. Find the Key on 2F Balcony.');
             const handleKey = (evt: KeyboardEvent) => {
               if (evt.code === 'KeyE') {
                 if (useGameStore.getState().hasKey) {
@@ -712,7 +1038,6 @@ export default function Mansion() {
         }}
         onIntersectionExit={(e) => {
           if (e.other.rigidBodyObject?.name === 'player') {
-            setCanInteractDoor(false);
             setInteractPrompt(null);
           }
         }}
@@ -725,3 +1050,4 @@ export default function Mansion() {
     </group>
   );
 }
+

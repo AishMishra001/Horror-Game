@@ -25,15 +25,20 @@ export default function Monster() {
   
   const [state, setState] = useState<'patrol' | 'chase'>('patrol');
   const [currentWaypoint, setCurrentWaypoint] = useState(0);
+
+  const mPosVec = useRef(new Vector3());
+  const targetVec = useRef(new Vector3());
+  const dirVec = useRef(new Vector3());
   
-  useFrame(() => {
+  useFrame((_, rawDelta) => {
     if (!bodyRef.current || gameState !== 'playing') return;
 
+    const delta = Math.min(rawDelta, 0.05);
     const monsterPos = bodyRef.current.translation();
-    const mPos = new Vector3(monsterPos.x, monsterPos.y, monsterPos.z);
+    mPosVec.current.set(monsterPos.x, monsterPos.y, monsterPos.z);
     
     // Simple Line of Sight check (distance based for now, raycasting is better but heavier)
-    const distToPlayer = mPos.distanceTo(camera.position);
+    const distToPlayer = mPosVec.current.distanceTo(camera.position);
     
     if (distToPlayer < SIGHT_RANGE && state === 'patrol') {
       setState('chase');
@@ -41,24 +46,23 @@ export default function Monster() {
       setState('patrol');
     }
 
-    let target = new Vector3();
     let speed = 0;
 
     if (state === 'chase') {
-      target.copy(camera.position);
-      target.y = mPos.y; // Keep it on the ground
+      targetVec.current.copy(camera.position);
+      targetVec.current.y = mPosVec.current.y; // Keep it on the ground
       speed = CHASE_SPEED;
     } else {
-      target.copy(WAYPOINTS[currentWaypoint]);
+      targetVec.current.copy(WAYPOINTS[currentWaypoint]);
       speed = PATROL_SPEED;
       
-      if (mPos.distanceTo(target) < 1) {
+      if (mPosVec.current.distanceTo(targetVec.current) < 1) {
         setCurrentWaypoint((prev) => (prev + 1) % WAYPOINTS.length);
       }
     }
 
-    const direction = target.clone().sub(mPos).normalize();
-    const velocity = direction.multiplyScalar(speed);
+    dirVec.current.subVectors(targetVec.current, mPosVec.current).normalize();
+    const velocity = dirVec.current.multiplyScalar(speed);
     
     // Preserve vertical velocity (falling/gravity)
     const linVel = bodyRef.current.linvel();
