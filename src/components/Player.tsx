@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { PointerLockControls } from '@react-three/drei';
 import { RigidBody, RapierRigidBody, CapsuleCollider } from '@react-three/rapier';
-import { Vector3, MathUtils, SpotLight } from 'three';
+import { Vector3, Euler, MathUtils, SpotLight } from 'three';
 import { useGameStore } from '@/store/useGameStore';
 import { useTouchControls, touchStateRef } from '@/store/useTouchControls';
 import { playFlashlightClickSound } from '@/utils/creepyAudio';
@@ -119,32 +119,38 @@ export default function Player() {
     };
   }, []);
 
-  // Pre-allocated vectors for 60FPS zero-GC movement calculations
+  // Pre-allocated vectors & euler for 60FPS zero-GC movement calculations
   const frontVec = useRef(new Vector3());
   const sideVec = useRef(new Vector3());
   const inputDir = useRef(new Vector3());
   const aimVec = useRef(new Vector3());
+  const playerYawEuler = useRef(new Euler(0, 0, 0, 'YXZ'));
 
   useFrame((state, rawDelta) => {
     if (!bodyRef.current || gameState !== 'playing') return;
 
     const camera = state.camera;
+    // Set standard FPS rotation order (yaw around world Y, pitch around local X, zero roll)
+    camera.rotation.order = 'YXZ';
+
     // Clamp delta to prevent physics explosion / micro-stutters during lag spikes
     const delta = Math.min(rawDelta, 0.05);
     const m = movementRef.current;
 
-    // 0. Touch Camera Look Consumption & Fallbacks
+    // 0. Touch Camera Look Consumption (Standard FPS yaw and pitch)
     const { dx, dy } = useTouchControls.getState().consumeLookDelta();
     if (dx !== 0 || dy !== 0) {
       camera.rotation.y -= dx * 1.5;
-      camera.rotation.x = Math.max(-Math.PI / 2.5, Math.min(Math.PI / 2.5, camera.rotation.x - dy * 1.5));
+      camera.rotation.x = Math.max(-Math.PI / 2.3, Math.min(Math.PI / 2.3, camera.rotation.x - dy * 1.5));
+      camera.rotation.z = 0;
     }
 
     // Keyboard Camera Rotation Fallback
     if (m.turnLeft) camera.rotation.y += delta * 2.2;
     if (m.turnRight) camera.rotation.y -= delta * 2.2;
-    if (m.turnUp) camera.rotation.x = Math.max(-Math.PI / 2.5, camera.rotation.x + delta * 1.5);
-    if (m.turnDown) camera.rotation.x = Math.min(Math.PI / 2.5, camera.rotation.x - delta * 1.5);
+    if (m.turnUp) camera.rotation.x = Math.max(-Math.PI / 2.3, camera.rotation.x + delta * 1.5);
+    if (m.turnDown) camera.rotation.x = Math.min(Math.PI / 2.3, camera.rotation.x - delta * 1.5);
+    camera.rotation.z = 0;
 
     // 1. Sprint & Stamina Logic (without causing React re-renders)
     const joy = touchStateRef.joystick;
@@ -184,34 +190,28 @@ export default function Player() {
     const targetHeight = isCrouching ? 0.8 : 1.6;
     currentHeightRef.current = MathUtils.lerp(currentHeightRef.current, targetHeight, delta * 10);
 
-    // 4. Direction & Movement Physics (Zero Garbage Collection)
+    // 4. Direction & Movement Physics (Pure Horizontal Projection using Yaw)
     const linVel = bodyRef.current.linvel();
+    playerYawEuler.current.set(0, camera.rotation.y, 0);
 
     if (isTouchMoving) {
-      // Touch joystick takes movement priority
+      // Touch joystick movement: X is left/right, -Y is forward (camera space)
       inputDir.current.set(joy.x, 0, -joy.y);
       if (inputDir.current.lengthSq() > 0.001) {
         inputDir.current.normalize().multiplyScalar(currentSpeedRef.current);
-        inputDir.current.applyEuler(camera.rotation);
-        inputDir.current.y = 0; // lock to horizontal plane
-        if (inputDir.current.lengthSq() > 0.001) {
-          inputDir.current.normalize().multiplyScalar(currentSpeedRef.current);
-        }
+        inputDir.current.applyEuler(playerYawEuler.current);
       }
-    } else {
-      // Keyboard input
+    } else if (isKbMoving) {
       frontVec.current.set(0, 0, (m.backward ? 1 : 0) - (m.forward ? 1 : 0));
       sideVec.current.set((m.left ? 1 : 0) - (m.right ? 1 : 0), 0, 0);
 
       inputDir.current.subVectors(frontVec.current, sideVec.current);
       if (inputDir.current.lengthSq() > 0.001) {
         inputDir.current.normalize().multiplyScalar(currentSpeedRef.current);
-        inputDir.current.applyEuler(camera.rotation);
-        inputDir.current.y = 0;
-        if (inputDir.current.lengthSq() > 0.001) {
-          inputDir.current.normalize().multiplyScalar(currentSpeedRef.current);
-        }
+        inputDir.current.applyEuler(playerYawEuler.current);
       }
+    } else {
+      inputDir.current.set(0, 0, 0);
     }
 
     smoothedVelocity.current.lerp(inputDir.current, delta * 15);
