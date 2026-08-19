@@ -500,8 +500,6 @@ function InteractableKitchenDoor({ wallTex, woodTex }: { wallTex: THREE.Texture;
   const leftPivotRef = useRef<THREE.Group>(null);
   const rightPivotRef = useRef<THREE.Group>(null);
 
-  isOpenRef.current = isOpen;
-
   const playDoorSound = () => {
     if (typeof window !== 'undefined') {
       const audio = new Audio('/stairs and doors.mp3');
@@ -625,6 +623,30 @@ function InteractableKitchenDoor({ wallTex, woodTex }: { wallTex: THREE.Texture;
   );
 }
 
+// High-performance wall helper (receives shadows, doesn't cast)
+function Wall({
+  pos,
+  size,
+  texMap,
+}: {
+  pos: [number, number, number];
+  size: [number, number, number];
+  texMap?: THREE.Texture;
+}) {
+  return (
+    <RigidBody type="fixed" colliders="cuboid" position={pos}>
+      <mesh receiveShadow>
+        <boxGeometry args={size} />
+        {texMap ? (
+          <meshStandardMaterial map={texMap} roughness={0.9} />
+        ) : (
+          <meshStandardMaterial color="#4a4035" roughness={0.9} />
+        )}
+      </mesh>
+    </RigidBody>
+  );
+}
+
 // ─── Main Mansion Component ───────────────────────────────────────────────────
 export default function Mansion() {
   const hasKey = useGameStore((s) => s.hasKey);
@@ -668,24 +690,6 @@ export default function Mansion() {
   tileTex.repeat.set(3, 3);
   grungeWallTex.repeat.set(3, 2);
   doorWoodTex.repeat.set(1.5, 3);
-
-  // High-performance wall helper (receives shadows, doesn't cast)
-  const Wall = ({
-    pos,
-    size,
-    texMap = wallTex,
-  }: {
-    pos: [number, number, number];
-    size: [number, number, number];
-    texMap?: THREE.Texture;
-  }) => (
-    <RigidBody type="fixed" colliders="cuboid" position={pos}>
-      <mesh receiveShadow>
-        <boxGeometry args={size} />
-        <meshStandardMaterial map={texMap} roughness={0.9} />
-      </mesh>
-    </RigidBody>
-  );
 
   return (
     <group>
@@ -812,21 +816,21 @@ export default function Mansion() {
       <GothicRailing position={[0, 5.0, -4.0]} length={13.0} rotY={Math.PI / 2} />
 
       {/* ═══ FULL HEIGHT OUTER MANSION WALLS (Y = 0 to 10) ═══════════════════ */}
-      <Wall pos={[-15.5, 5, 2.5]} size={[1, 10, 47]} />
-      <Wall pos={[15.5, 5, 2.5]} size={[1, 10, 47]} />
-      <Wall pos={[0, 5, -20.5]} size={[32, 10, 1]} />
-      <Wall pos={[0, 5, 25.5]} size={[32, 10, 1]} />
+      <Wall pos={[-15.5, 5, 2.5]} size={[1, 10, 47]} texMap={wallTex} />
+      <Wall pos={[15.5, 5, 2.5]} size={[1, 10, 47]} texMap={wallTex} />
+      <Wall pos={[0, 5, -20.5]} size={[32, 10, 1]} texMap={wallTex} />
+      <Wall pos={[0, 5, 25.5]} size={[32, 10, 1]} texMap={wallTex} />
 
       {/* ═══ GROUND FLOOR INNER WALLS, KITCHEN & BATHROOM ═════════════════════ */}
       {/* West Wing (Kitchen & Dining) */}
       <Wall pos={[-10, 2, -5]} size={[10, 4, 0.5]} texMap={grungeWallTex} />
       <Wall pos={[-5, 2, -14.35]} size={[0.5, 4, 11.3]} texMap={grungeWallTex} />
       <Wall pos={[-5, 2, -5.65]} size={[0.5, 4, 1.3]} texMap={grungeWallTex} />
-      <Wall pos={[-5, 2, 2.5]} size={[0.5, 4, 15]} />
+      <Wall pos={[-5, 2, 2.5]} size={[0.5, 4, 15]} texMap={wallTex} />
 
       {/* East Wing (Bathroom & Ballroom) */}
       <Wall pos={[10, 2, -5]} size={[10, 4, 0.5]} texMap={grungeWallTex} />
-      <Wall pos={[5, 2, 2.5]} size={[0.5, 4, 15]} />
+      <Wall pos={[5, 2, 2.5]} size={[0.5, 4, 15]} texMap={wallTex} />
 
       {/* Victorian Double Kitchen Door */}
       <InteractableKitchenDoor wallTex={grungeWallTex} woodTex={doorWoodTex} />
@@ -861,30 +865,30 @@ export default function Mansion() {
 
       {/* ═══ 2ND FLOOR INTERIOR WALLS & ARCHWAYS (Y = 5.0 to 10.0) ═══════════ */}
       {/* North-South Dividing Walls */}
-      <Wall pos={[-10.75, 7.5, 12.5]} size={[8.5, 5.0, 0.3]} />
-      <Wall pos={[10.75, 7.5, 12.5]} size={[8.5, 5.0, 0.3]} />
+      <Wall pos={[-10.75, 7.5, 12.5]} size={[8.5, 5.0, 0.3]} texMap={wallTex} />
+      <Wall pos={[10.75, 7.5, 12.5]} size={[8.5, 5.0, 0.3]} texMap={wallTex} />
 
       {/* Front Enclosing Walls for 2F Washrooms */}
-      <Wall pos={[-10.75, 7.5, -4.0]} size={[8.5, 5.0, 0.3]} />
-      <Wall pos={[10.75, 7.5, -4.0]} size={[8.5, 5.0, 0.3]} />
+      <Wall pos={[-10.75, 7.5, -4.0]} size={[8.5, 5.0, 0.3]} texMap={wallTex} />
+      <Wall pos={[10.75, 7.5, -4.0]} size={[8.5, 5.0, 0.3]} texMap={wallTex} />
 
       {/* West Corridor Wall */}
-      <Wall pos={[-6.5, 7.5, 0.5]} size={[0.3, 5.0, 9.0]} />
-      <Wall pos={[-6.5, 9.0, 6.5]} size={[0.3, 2.0, 3.0]} />
-      <Wall pos={[-6.5, 7.5, 11.75]} size={[0.3, 5.0, 7.5]} />
-      <Wall pos={[-6.5, 9.0, 17.0]} size={[0.3, 2.0, 3.0]} />
-      <Wall pos={[-6.5, 7.5, 20.0]} size={[0.3, 5.0, 3.0]} />
-      <Wall pos={[-6.5, 9.0, 23.0]} size={[0.3, 2.0, 3.0]} />
-      <Wall pos={[-6.5, 7.5, 25.0]} size={[0.3, 5.0, 1.0]} />
+      <Wall pos={[-6.5, 7.5, 0.5]} size={[0.3, 5.0, 9.0]} texMap={wallTex} />
+      <Wall pos={[-6.5, 9.0, 6.5]} size={[0.3, 2.0, 3.0]} texMap={wallTex} />
+      <Wall pos={[-6.5, 7.5, 11.75]} size={[0.3, 5.0, 7.5]} texMap={wallTex} />
+      <Wall pos={[-6.5, 9.0, 17.0]} size={[0.3, 2.0, 3.0]} texMap={wallTex} />
+      <Wall pos={[-6.5, 7.5, 20.0]} size={[0.3, 5.0, 3.0]} texMap={wallTex} />
+      <Wall pos={[-6.5, 9.0, 23.0]} size={[0.3, 2.0, 3.0]} texMap={wallTex} />
+      <Wall pos={[-6.5, 7.5, 25.0]} size={[0.3, 5.0, 1.0]} texMap={wallTex} />
 
       {/* East Corridor Wall */}
-      <Wall pos={[6.5, 7.5, 0.5]} size={[0.3, 5.0, 9.0]} />
-      <Wall pos={[6.5, 9.0, 6.5]} size={[0.3, 2.0, 3.0]} />
-      <Wall pos={[6.5, 7.5, 11.75]} size={[0.3, 5.0, 7.5]} />
-      <Wall pos={[6.5, 9.0, 17.0]} size={[0.3, 2.0, 3.0]} />
-      <Wall pos={[6.5, 7.5, 20.0]} size={[0.3, 5.0, 3.0]} />
-      <Wall pos={[6.5, 9.0, 23.0]} size={[0.3, 2.0, 3.0]} />
-      <Wall pos={[6.5, 7.5, 25.0]} size={[0.3, 5.0, 1.0]} />
+      <Wall pos={[6.5, 7.5, 0.5]} size={[0.3, 5.0, 9.0]} texMap={wallTex} />
+      <Wall pos={[6.5, 9.0, 6.5]} size={[0.3, 2.0, 3.0]} texMap={wallTex} />
+      <Wall pos={[6.5, 7.5, 11.75]} size={[0.3, 5.0, 7.5]} texMap={wallTex} />
+      <Wall pos={[6.5, 9.0, 17.0]} size={[0.3, 2.0, 3.0]} texMap={wallTex} />
+      <Wall pos={[6.5, 7.5, 20.0]} size={[0.3, 5.0, 3.0]} texMap={wallTex} />
+      <Wall pos={[6.5, 9.0, 23.0]} size={[0.3, 2.0, 3.0]} texMap={wallTex} />
+      <Wall pos={[6.5, 7.5, 25.0]} size={[0.3, 5.0, 1.0]} texMap={wallTex} />
 
       {/* ═══ 4 FULLY FURNISHED 2ND FLOOR ROOMS ═══════════════════════════════ */}
       {/* ROOM 1: WASHROOM 1 (North-West Blood Bath) */}

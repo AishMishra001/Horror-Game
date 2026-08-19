@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
+import { useFrame } from '@react-three/fiber';
 import { PointerLockControls } from '@react-three/drei';
 import { RigidBody, RapierRigidBody, CapsuleCollider } from '@react-three/rapier';
 import { Vector3, MathUtils, SpotLight } from 'three';
 import { useGameStore } from '@/store/useGameStore';
+import { useTouchControls, touchStateRef } from '@/store/useTouchControls';
 import { playFlashlightClickSound } from '@/utils/creepyAudio';
 
 const WALK_SPEED = 5.0;
@@ -30,9 +31,9 @@ export default function Player() {
   const setGameState = useGameStore((s) => s.setGameState);
   const hasFlashlight = useGameStore((s) => s.hasFlashlight);
   const isFlashlightOn = useGameStore((s) => s.isFlashlightOn);
+  const isTouchDevice = useTouchControls((s) => s.isTouchDevice);
   const bodyRef = useRef<RapierRigidBody>(null);
   const spotLightRef = useRef<SpotLight>(null);
-  const { camera } = useThree();
 
   const [isCrouched, setIsCrouched] = useState(false);
 
@@ -124,22 +125,37 @@ export default function Player() {
   const inputDir = useRef(new Vector3());
   const aimVec = useRef(new Vector3());
 
-  useFrame((_, rawDelta) => {
+  useFrame((state, rawDelta) => {
     if (!bodyRef.current || gameState !== 'playing') return;
 
+    const camera = state.camera;
     // Clamp delta to prevent physics explosion / micro-stutters during lag spikes
     const delta = Math.min(rawDelta, 0.05);
     const m = movementRef.current;
 
-    // 0. Keyboard Camera Rotation Fallback
+    // 0. Touch Camera Look Consumption & Fallbacks
+    const { dx, dy } = useTouchControls.getState().consumeLookDelta();
+    if (dx !== 0 || dy !== 0) {
+      camera.rotation.y -= dx * 1.5;
+      camera.rotation.x = Math.max(-Math.PI / 2.5, Math.min(Math.PI / 2.5, camera.rotation.x - dy * 1.5));
+    }
+
+    // Keyboard Camera Rotation Fallback
     if (m.turnLeft) camera.rotation.y += delta * 2.2;
     if (m.turnRight) camera.rotation.y -= delta * 2.2;
     if (m.turnUp) camera.rotation.x = Math.max(-Math.PI / 2.5, camera.rotation.x + delta * 1.5);
     if (m.turnDown) camera.rotation.x = Math.min(Math.PI / 2.5, camera.rotation.x - delta * 1.5);
 
     // 1. Sprint & Stamina Logic (without causing React re-renders)
-    const isMoving = m.forward || m.backward || m.left || m.right;
-    const canSprint = m.sprint && !m.crouch && isMoving && staminaRef.current > 5;
+    const joy = touchStateRef.joystick;
+    const isTouchMoving = Math.abs(joy.x) > 0.05 || Math.abs(joy.y) > 0.05;
+    const isKbMoving = m.forward || m.backward || m.left || m.right;
+    const isMoving = isKbMoving || isTouchMoving;
+
+    const isSprinting = m.sprint || touchStateRef.sprint;
+    const isCrouching = m.crouch || touchStateRef.crouch;
+
+    const canSprint = isSprinting && !isCrouching && isMoving && staminaRef.current > 5;
 
     if (canSprint) {
       staminaRef.current = Math.max(0, staminaRef.current - delta * 25);
@@ -157,7 +173,7 @@ export default function Player() {
 
     // 2. Smooth Speed Interpolation
     let targetSpeed = WALK_SPEED;
-    if (m.crouch) {
+    if (isCrouching) {
       targetSpeed = CROUCH_SPEED;
     } else if (canSprint) {
       targetSpeed = SPRINT_SPEED;
@@ -165,18 +181,37 @@ export default function Player() {
     currentSpeedRef.current = MathUtils.lerp(currentSpeedRef.current, targetSpeed, delta * 10);
 
     // 3. Smooth Crouch Height Interpolation
-    const targetHeight = m.crouch ? 0.8 : 1.6;
+    const targetHeight = isCrouching ? 0.8 : 1.6;
     currentHeightRef.current = MathUtils.lerp(currentHeightRef.current, targetHeight, delta * 10);
 
     // 4. Direction & Movement Physics (Zero Garbage Collection)
     const linVel = bodyRef.current.linvel();
-    frontVec.current.set(0, 0, (m.backward ? 1 : 0) - (m.forward ? 1 : 0));
-    sideVec.current.set((m.left ? 1 : 0) - (m.right ? 1 : 0), 0, 0);
 
-    inputDir.current.subVectors(frontVec.current, sideVec.current);
-    if (inputDir.current.lengthSq() > 0.001) {
-      inputDir.current.normalize().multiplyScalar(currentSpeedRef.current);
-      inputDir.current.applyEuler(camera.rotation);
+    if (isTouchMoving) {
+      // Touch joystick takes movement priority
+      inputDir.current.set(joy.x, 0, -joy.y);
+      if (inputDir.current.lengthSq() > 0.001) {
+        inputDir.current.normalize().multiplyScalar(currentSpeedRef.current);
+        inputDir.current.applyEuler(camera.rotation);
+        inputDir.current.y = 0; // lock to horizontal plane
+        if (inputDir.current.lengthSq() > 0.001) {
+          inputDir.current.normalize().multiplyScalar(currentSpeedRef.current);
+        }
+      }
+    } else {
+      // Keyboard input
+      frontVec.current.set(0, 0, (m.backward ? 1 : 0) - (m.forward ? 1 : 0));
+      sideVec.current.set((m.left ? 1 : 0) - (m.right ? 1 : 0), 0, 0);
+
+      inputDir.current.subVectors(frontVec.current, sideVec.current);
+      if (inputDir.current.lengthSq() > 0.001) {
+        inputDir.current.normalize().multiplyScalar(currentSpeedRef.current);
+        inputDir.current.applyEuler(camera.rotation);
+        inputDir.current.y = 0;
+        if (inputDir.current.lengthSq() > 0.001) {
+          inputDir.current.normalize().multiplyScalar(currentSpeedRef.current);
+        }
+      }
     }
 
     smoothedVelocity.current.lerp(inputDir.current, delta * 15);
@@ -193,8 +228,8 @@ export default function Player() {
     let bobOffset = 0;
     const moveMagnitude = Math.sqrt(smoothedVelocity.current.x ** 2 + smoothedVelocity.current.z ** 2);
     if (moveMagnitude > 0.2 && pos.y < 7.5) {
-      const bobSpeed = canSprint ? 14 : m.crouch ? 7 : 10;
-      const bobAmount = canSprint ? 0.07 : m.crouch ? 0.03 : 0.045;
+      const bobSpeed = canSprint ? 14 : isCrouching ? 7 : 10;
+      const bobAmount = canSprint ? 0.07 : isCrouching ? 0.03 : 0.045;
       headBobTimer.current += delta * bobSpeed;
       bobOffset = Math.sin(headBobTimer.current) * bobAmount;
     } else {
@@ -207,10 +242,10 @@ export default function Player() {
     // 6. Dynamic Footstep Audio
     if (moveMagnitude > 0.3 && pos.y < 7.5) {
       stepTimer.current += delta;
-      const stepInterval = canSprint ? 0.32 : m.crouch ? 0.65 : 0.44;
+      const stepInterval = canSprint ? 0.32 : isCrouching ? 0.65 : 0.44;
       if (stepTimer.current > stepInterval) {
         const onStairs = pos.z > 9.5 && pos.z < 19.5 && pos.y > 0.5 && pos.y < 6.0;
-        const volume = m.crouch ? 0.2 : canSprint ? 0.65 : 0.45;
+        const volume = isCrouching ? 0.2 : canSprint ? 0.65 : 0.45;
         playFootstep(volume, onStairs, canSprint);
         stepTimer.current = 0;
       }
@@ -241,7 +276,7 @@ export default function Player() {
 
   return (
     <>
-      {gameState === 'playing' && (
+      {gameState === 'playing' && !isTouchDevice && (
         <PointerLockControls 
           onUnlock={() => {
             if (useGameStore.getState().gameState === 'playing') {
@@ -258,6 +293,7 @@ export default function Player() {
         mass={1} 
         type="dynamic" 
         position={[0, 2, 0]} 
+ 
         enabledRotations={[false, false, false]}
         name="player"
       >

@@ -1,8 +1,11 @@
 'use client';
 
 import { useGameStore } from '@/store/useGameStore';
+import { useTouchControls, enterFullscreenLandscape } from '@/store/useTouchControls';
 import { useEffect, useRef, useState } from 'react';
 import MapUI from './MapUI';
+import MobileControls from './MobileControls';
+import LandscapePrompt from './LandscapePrompt';
 import { playCreepyAudio, playFlashlightClickSound } from '@/utils/creepyAudio';
 
 export default function UI() {
@@ -13,9 +16,10 @@ export default function UI() {
   const isFlashlightOn = useGameStore((s) => s.isFlashlightOn);
   const toggleFlashlight = useGameStore((s) => s.toggleFlashlight);
   const interactPrompt = useGameStore((s) => s.interactPrompt);
-  const isKitchenJumpscareTriggered = useGameStore((s) => s.isKitchenJumpscareTriggered);
   const isKitchenJumpscareActive = useGameStore((s) => s.isKitchenJumpscareActive);
   const endKitchenJumpscare = useGameStore((s) => s.endKitchenJumpscare);
+
+  const isTouchDevice = useTouchControls((s) => s.isTouchDevice);
 
   const hasPlayedAudioRef = useRef(false);
   const jumpscareAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -58,7 +62,7 @@ export default function UI() {
     prevFlashlightRef.current = hasFlashlight;
   }, [hasFlashlight]);
 
-  // Restart shortcut on Game Over / Win
+  // Restart and Pause shortcut handlers
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'r' || e.key === 'R') {
@@ -66,10 +70,18 @@ export default function UI() {
           window.location.reload(); 
         }
       }
+      if (e.code === 'Escape') {
+        const current = useGameStore.getState().gameState;
+        if (current === 'playing') {
+          setGameState('paused');
+        } else if (current === 'paused') {
+          setGameState('playing');
+        }
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [gameState]);
+  }, [gameState, setGameState]);
 
   // Jumpscare audio lifecycle handler (synced directly to audio completion)
   useEffect(() => {
@@ -102,46 +114,80 @@ export default function UI() {
 
   const handleStartGame = () => {
     setGameState('playing');
+    if (isTouchDevice) {
+      enterFullscreenLandscape().catch(() => {});
+    }
     if (!hasPlayedAudioRef.current) {
       hasPlayedAudioRef.current = true;
-      playCreepyAudio('/koteshwaraye-ravi-kishan.mp3');
+      try {
+        playCreepyAudio('/koteshwaraye-ravi-kishan.mp3');
+      } catch (e) {
+        console.warn('Audio play error:', e);
+      }
     }
   };
 
   return (
     <div className="absolute inset-0 pointer-events-none z-10 flex flex-col items-center justify-center font-sans">
+      {/* ═══ LANDSCAPE ORIENTATION PROMPT OVERLAY ═══ */}
+      <LandscapePrompt />
+
+      {/* ═══ ON-SCREEN MOBILE JOYSTICK & ACTION BUTTONS ═══ */}
+      <MobileControls />
+
       {/* ═══ MAIN MENU ════════════════════════════════════════════════════ */}
       {gameState === 'menu' && (
-        <div className="absolute inset-0 bg-black/95 pointer-events-auto flex flex-col items-center justify-center text-red-600 font-mono px-4">
-          <div className="text-center mb-8">
-            <h1 className="text-6xl md:text-8xl font-black tracking-widest text-red-600 drop-shadow-[0_0_25px_rgba(255,0,0,0.8)]">
+        <div className="absolute inset-0 bg-black/95 pointer-events-auto flex flex-col items-center justify-center text-red-600 font-mono px-4 py-6 overflow-y-auto">
+          <div className="text-center mb-4 md:mb-6">
+            <h1 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-widest text-red-600 drop-shadow-[0_0_25px_rgba(255,0,0,0.8)]">
               RAVI KISHAN
             </h1>
-            <p className="text-2xl md:text-3xl text-red-800 tracking-[0.3em] uppercase mt-2">
+            <p className="text-lg sm:text-2xl md:text-3xl text-red-800 tracking-[0.3em] uppercase mt-1 md:mt-2">
               The Haunted Mansion
             </p>
           </div>
 
-          <p className="text-gray-400 mb-10 max-w-lg text-center text-sm md:text-base leading-relaxed">
+          <p className="text-gray-400 mb-6 md:mb-8 max-w-lg text-center text-xs sm:text-sm md:text-base leading-relaxed px-2">
             Search the eerie corridors and the decayed kitchen. Find the flashlight in the fridge and uncover the hidden key to unlock the grand gates.
           </p>
 
           <button 
             onClick={handleStartGame}
-            className="px-10 py-4 mb-10 text-2xl font-bold tracking-wider border-2 border-red-700 text-red-500 bg-red-950/30 hover:bg-red-900/60 hover:text-white hover:border-red-500 transition-all duration-300 shadow-[0_0_20px_rgba(255,0,0,0.4)] rounded-sm cursor-pointer"
+            className="px-8 md:px-12 py-3 md:py-4 mb-6 md:mb-8 text-lg sm:text-xl md:text-2xl font-bold tracking-wider border-2 border-red-700 text-red-500 bg-red-950/30 hover:bg-red-900/60 hover:text-white hover:border-red-500 active:scale-95 transition-all duration-300 shadow-[0_0_25px_rgba(255,0,0,0.4)] rounded-sm cursor-pointer"
           >
             ENTER THE MANSION
           </button>
 
-          <div className="text-gray-400 text-xs md:text-sm grid grid-cols-2 gap-x-8 gap-y-2.5 bg-black/70 p-6 border border-red-950/60 rounded-md backdrop-blur-sm max-w-md w-full">
-            <div className="col-span-2 text-center text-red-500 font-bold mb-1 tracking-widest uppercase">CONTROLS</div>
-            <div className="text-right text-gray-500 font-mono">W, A, S, D</div><div className="text-left font-semibold text-gray-200">Move</div>
-            <div className="text-right text-gray-500 font-mono">Shift (Hold)</div><div className="text-left font-semibold text-gray-200">Sprint</div>
-            <div className="text-right text-gray-500 font-mono">C / Left Ctrl</div><div className="text-left font-semibold text-gray-200">Crouch / Sneak</div>
-            <div className="text-right text-gray-500 font-mono">E</div><div className="text-left font-semibold text-gray-200">Interact (Door / Fridge / Key)</div>
-            <div className="text-right text-gray-500 font-mono">F</div><div className="text-left font-semibold text-amber-300">Toggle Flashlight</div>
-            <div className="text-right text-gray-500 font-mono">M</div><div className="text-left font-semibold text-gray-200">View Mansion Map</div>
-            <div className="text-right text-gray-500 font-mono">ESC</div><div className="text-left font-semibold text-gray-200">Pause</div>
+          {/* Dual Controls Info (Desktop & Mobile Friendly) */}
+          <div className="text-gray-400 text-xs md:text-sm bg-black/80 p-4 md:p-6 border border-red-950/80 rounded-md backdrop-blur-sm max-w-lg w-full">
+            <div className="text-center text-red-500 font-bold mb-3 tracking-widest uppercase text-xs md:text-sm">
+              {isTouchDevice ? 'TOUCH & MOBILE CONTROLS' : 'GAMEPLAY CONTROLS'}
+            </div>
+
+            {isTouchDevice ? (
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-left">
+                <div className="text-right text-gray-500 font-mono">Left Stick</div>
+                <div className="text-left font-semibold text-gray-200">Move & Strafe</div>
+                <div className="text-right text-gray-500 font-mono">Right Screen Drag</div>
+                <div className="text-left font-semibold text-gray-200">Look Around</div>
+                <div className="text-right text-gray-500 font-mono">✋ Button</div>
+                <div className="text-left font-semibold text-gray-200">Interact (Door / Fridge / Key)</div>
+                <div className="text-right text-gray-500 font-mono">🏃 / 🧎</div>
+                <div className="text-left font-semibold text-gray-200">Sprint / Sneak Toggle</div>
+                <div className="text-right text-gray-500 font-mono">🔦 / 🗺️</div>
+                <div className="text-left font-semibold text-amber-300">Flashlight / Mansion Map</div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-x-8 gap-y-2">
+                <div className="text-right text-gray-500 font-mono">W, A, S, D</div><div className="text-left font-semibold text-gray-200">Move</div>
+                <div className="text-right text-gray-500 font-mono">Shift (Hold)</div><div className="text-left font-semibold text-gray-200">Sprint</div>
+                <div className="text-right text-gray-500 font-mono">C / Left Ctrl</div><div className="text-left font-semibold text-gray-200">Crouch / Sneak</div>
+                <div className="text-right text-gray-500 font-mono">E</div><div className="text-left font-semibold text-gray-200">Interact (Door / Fridge / Key)</div>
+                <div className="text-right text-gray-500 font-mono">F</div><div className="text-left font-semibold text-amber-300">Toggle Flashlight</div>
+                <div className="text-right text-gray-500 font-mono">M</div><div className="text-left font-semibold text-gray-200">View Mansion Map</div>
+                <div className="text-right text-gray-500 font-mono">ESC</div><div className="text-left font-semibold text-gray-200">Pause</div>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -150,27 +196,29 @@ export default function UI() {
       {gameState === 'playing' && (
         <>
           {/* Top-Left Objective Bar */}
-          <div className="absolute top-6 left-6 flex flex-col gap-1 pointer-events-none select-none">
-            <div className="text-[11px] font-mono uppercase tracking-widest text-red-500 font-bold flex items-center gap-2">
+          <div className="absolute top-4 md:top-6 left-4 md:left-6 flex flex-col gap-1 pointer-events-none select-none max-w-[65%] md:max-w-none safe-left safe-top">
+            <div className="text-[10px] md:text-[11px] font-mono uppercase tracking-widest text-red-500 font-bold flex items-center gap-2">
               <span className="inline-block w-2 h-2 rounded-full bg-red-600 animate-ping" />
               CURRENT OBJECTIVE
             </div>
-            <div className="text-base md:text-lg font-mono text-gray-200 bg-black/60 px-3.5 py-1.5 rounded border border-gray-800 backdrop-blur-sm shadow-md">
+            <div className="text-xs sm:text-sm md:text-lg font-mono text-gray-200 bg-black/70 px-2.5 md:px-3.5 py-1 md:py-1.5 rounded border border-gray-800 backdrop-blur-sm shadow-md truncate">
               {!hasFlashlight 
-                ? '🔦 Search the Kitchen Fridge for a Flashlight' 
+                ? '🔦 Search Kitchen Fridge for Flashlight' 
                 : !hasKey 
-                  ? '🗝️ Search the 2nd Floor Balcony for the Hidden Key' 
-                  : '🔓 Unlock the Grand Main Entrance Gate to Escape'}
+                  ? '🗝️ Search 2nd Floor Balcony for Key' 
+                  : '🔓 Unlock Grand Main Entrance Gate'}
             </div>
           </div>
 
-          {/* Top-Right Performance FPS Counter */}
-          <div className="absolute top-6 right-6 flex items-center gap-2 bg-black/60 px-3 py-1.5 rounded border border-gray-800 backdrop-blur-sm select-none pointer-events-none">
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <span ref={fpsRef} className="font-mono text-xs font-bold text-green-400">
-              60 FPS
-            </span>
-          </div>
+          {/* Top-Right Performance FPS Counter (Hidden on narrow touch screen if quick bar is present) */}
+          {!isTouchDevice && (
+            <div className="absolute top-6 right-6 flex items-center gap-2 bg-black/60 px-3 py-1.5 rounded border border-gray-800 backdrop-blur-sm select-none pointer-events-none safe-right safe-top">
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <span ref={fpsRef} className="font-mono text-xs font-bold text-green-400">
+                60 FPS
+              </span>
+            </div>
+          )}
 
           {/* Dynamic Crosshair / Interaction Reticle */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
@@ -183,22 +231,22 @@ export default function UI() {
 
           {/* Interaction Toast Prompt */}
           {interactPrompt && (
-            <div className="absolute top-[62%] px-5 py-2 rounded-full bg-black/85 border border-yellow-500/80 text-yellow-300 font-mono text-lg tracking-wider text-center drop-shadow-[0_0_15px_rgba(0,0,0,0.9)] backdrop-blur-md animate-bounce">
+            <div className="absolute top-[58%] px-4 md:px-5 py-1.5 md:py-2 rounded-full bg-black/85 border border-yellow-500/80 text-yellow-300 font-mono text-sm md:text-lg tracking-wider text-center drop-shadow-[0_0_15px_rgba(0,0,0,0.9)] backdrop-blur-md animate-bounce pointer-events-none">
               {interactPrompt}
             </div>
           )}
 
           {/* Flashlight Acquired Toast Banner */}
           {showPickupToast && (
-            <div className="absolute top-20 px-6 py-3 rounded-md bg-amber-950/90 border-2 border-amber-400 text-amber-200 font-mono text-sm tracking-wider text-center drop-shadow-[0_0_20px_rgba(251,191,36,0.6)] backdrop-blur-md animate-pulse">
-              🔦 <strong className="text-white">FLASHLIGHT ACQUIRED</strong> — Press <span className="bg-amber-800 px-1.5 py-0.5 rounded text-amber-100 font-bold">[F]</span> or click HUD icon to toggle light!
+            <div className="absolute top-16 md:top-20 px-4 md:px-6 py-2 md:py-3 rounded-md bg-amber-950/90 border-2 border-amber-400 text-amber-200 font-mono text-xs md:text-sm tracking-wider text-center drop-shadow-[0_0_20px_rgba(251,191,36,0.6)] backdrop-blur-md animate-pulse z-30">
+              🔦 <strong className="text-white">FLASHLIGHT ACQUIRED</strong> — Toggle with <span className="bg-amber-800 px-1.5 py-0.5 rounded text-amber-100 font-bold">{isTouchDevice ? '🔦 Button' : '[F]'}</span>!
             </div>
           )}
 
           {/* Bottom-Center Stamina Bar (Direct DOM update for zero React re-render lag) */}
           <div 
             id="stamina-container" 
-            className="absolute bottom-16 left-1/2 -translate-x-1/2 w-48 h-1.5 bg-black/60 rounded-full overflow-hidden border border-gray-800 transition-opacity duration-300 opacity-0"
+            className="absolute bottom-16 left-1/2 -translate-x-1/2 w-36 md:w-48 h-1.5 bg-black/60 rounded-full overflow-hidden border border-gray-800 transition-opacity duration-300 opacity-0 pointer-events-none"
           >
             <div 
               id="stamina-progress-bar"
@@ -206,95 +254,111 @@ export default function UI() {
             />
           </div>
 
-          {/* Bottom-Left Controls Reminder */}
-          <div className="absolute bottom-6 left-6 text-gray-500 font-mono text-xs hidden md:flex items-center gap-4 bg-black/40 px-3 py-1.5 rounded border border-gray-900 backdrop-blur-sm">
-            <span><strong className="text-gray-300">[SHIFT]</strong> Sprint</span>
-            <span><strong className="text-gray-300">[C]</strong> Crouch</span>
-            <span><strong className="text-gray-300">[E]</strong> Interact</span>
-            <span><strong className={hasFlashlight ? 'text-amber-400' : 'text-gray-500'}>[F]</strong> Flashlight</span>
-            <span><strong className="text-gray-300">[M]</strong> Map</span>
-          </div>
+          {/* Bottom-Left Controls Reminder (Desktop Only) */}
+          {!isTouchDevice && (
+            <div className="absolute bottom-6 left-6 text-gray-500 font-mono text-xs hidden md:flex items-center gap-4 bg-black/40 px-3 py-1.5 rounded border border-gray-900 backdrop-blur-sm safe-left safe-bottom">
+              <span><strong className="text-gray-300">[SHIFT]</strong> Sprint</span>
+              <span><strong className="text-gray-300">[C]</strong> Crouch</span>
+              <span><strong className="text-gray-300">[E]</strong> Interact</span>
+              <span><strong className={hasFlashlight ? 'text-amber-400' : 'text-gray-500'}>[F]</strong> Flashlight</span>
+              <span><strong className="text-gray-300">[M]</strong> Map</span>
+            </div>
+          )}
 
-          {/* Bottom-Right Inventory & Status Indicators */}
-          <div className="absolute bottom-6 right-6 flex items-center gap-3">
-            {/* Interactive Flashlight Button Widget */}
-            <button
-              onClick={() => {
-                if (hasFlashlight) {
-                  toggleFlashlight();
-                  playFlashlightClickSound(!isFlashlightOn);
-                }
-              }}
-              className={`flex items-center gap-3 bg-black/60 px-3.5 py-2 rounded border transition-all duration-200 pointer-events-auto select-none ${
-                !hasFlashlight 
-                  ? 'border-gray-800/80 opacity-60 cursor-not-allowed' 
-                  : isFlashlightOn 
-                    ? 'border-amber-400 bg-amber-950/40 shadow-[0_0_15px_rgba(251,191,36,0.3)] cursor-pointer hover:scale-105' 
-                    : 'border-gray-700 bg-black/60 cursor-pointer hover:border-gray-500'
-              }`}
-              title={hasFlashlight ? 'Click or Press [F] to Toggle Light' : 'Flashlight is inside Kitchen Fridge'}
-            >
-              <div className={`w-9 h-9 rounded-full border-2 flex items-center justify-center text-base transition-all ${
-                !hasFlashlight 
-                  ? 'border-gray-700 bg-black/40 grayscale' 
-                  : isFlashlightOn 
-                    ? 'border-amber-400 bg-amber-400/20 shadow-[0_0_10px_rgba(251,191,36,0.8)]' 
-                    : 'border-gray-600 bg-black/50 text-gray-400'
-              }`}>
-                🔦
-              </div>
-              <div className="flex flex-col text-left">
-                <span className="text-[10px] uppercase font-mono tracking-wider text-gray-400">FLASHLIGHT</span>
-                <span className={`font-mono text-xs md:text-sm font-bold uppercase ${
-                  !hasFlashlight ? 'text-gray-500' : isFlashlightOn ? 'text-amber-400' : 'text-gray-400'
+          {/* Bottom-Right Inventory & Status Indicators (Desktop Only - Mobile has dedicated on-screen touch cluster) */}
+          {!isTouchDevice && (
+            <div className="absolute bottom-6 right-6 flex items-center gap-3 safe-right safe-bottom">
+              {/* Interactive Flashlight Button Widget */}
+              <button
+                onClick={() => {
+                  if (hasFlashlight) {
+                    toggleFlashlight();
+                    playFlashlightClickSound(!isFlashlightOn);
+                  }
+                }}
+                className={`flex items-center gap-3 bg-black/60 px-3.5 py-2 rounded border transition-all duration-200 pointer-events-auto select-none ${
+                  !hasFlashlight 
+                    ? 'border-gray-800/80 opacity-60 cursor-not-allowed' 
+                    : isFlashlightOn 
+                      ? 'border-amber-400 bg-amber-950/40 shadow-[0_0_15px_rgba(251,191,36,0.3)] cursor-pointer hover:scale-105' 
+                      : 'border-gray-700 bg-black/60 cursor-pointer hover:border-gray-500'
+                }`}
+                title={hasFlashlight ? 'Click or Press [F] to Toggle Light' : 'Flashlight is inside Kitchen Fridge'}
+              >
+                <div className={`w-9 h-9 rounded-full border-2 flex items-center justify-center text-base transition-all ${
+                  !hasFlashlight 
+                    ? 'border-gray-700 bg-black/40 grayscale' 
+                    : isFlashlightOn 
+                      ? 'border-amber-400 bg-amber-400/20 shadow-[0_0_10px_rgba(251,191,36,0.8)]' 
+                      : 'border-gray-600 bg-black/50 text-gray-400'
                 }`}>
-                  {!hasFlashlight ? 'MISSING' : isFlashlightOn ? 'ON [F]' : 'OFF [F]'}
-                </span>
-              </div>
-            </button>
+                  🔦
+                </div>
+                <div className="flex flex-col text-left">
+                  <span className="text-[10px] uppercase font-mono tracking-wider text-gray-400">FLASHLIGHT</span>
+                  <span className={`font-mono text-xs md:text-sm font-bold uppercase ${
+                    !hasFlashlight ? 'text-gray-500' : isFlashlightOn ? 'text-amber-400' : 'text-gray-400'
+                  }`}>
+                    {!hasFlashlight ? 'MISSING' : isFlashlightOn ? 'ON [F]' : 'OFF [F]'}
+                  </span>
+                </div>
+              </button>
 
-            {/* Key Status Indicator */}
-            <div className="flex items-center gap-3 bg-black/60 px-3.5 py-2 rounded border border-gray-800 backdrop-blur-sm shadow-md">
-              <div className={`w-9 h-9 rounded-full border-2 ${hasKey ? 'border-yellow-400 bg-yellow-400/20 shadow-[0_0_12px_rgba(255,215,0,0.6)]' : 'border-gray-700 bg-black/40'} flex items-center justify-center text-base`}>
-                {hasKey ? '🗝️' : '🔒'}
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] uppercase font-mono tracking-wider text-gray-500">GATE KEY</span>
-                <span className={`font-mono text-xs md:text-sm font-bold uppercase ${hasKey ? 'text-yellow-400' : 'text-gray-500'}`}>
-                  {hasKey ? 'ACQUIRED' : 'MISSING'}
-                </span>
+              {/* Key Status Indicator */}
+              <div className="flex items-center gap-3 bg-black/60 px-3.5 py-2 rounded border border-gray-800 backdrop-blur-sm shadow-md">
+                <div className={`w-9 h-9 rounded-full border-2 ${hasKey ? 'border-yellow-400 bg-yellow-400/20 shadow-[0_0_12px_rgba(255,215,0,0.6)]' : 'border-gray-700 bg-black/40'} flex items-center justify-center text-base`}>
+                  {hasKey ? '🗝️' : '🔒'}
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] uppercase font-mono tracking-wider text-gray-500">GATE KEY</span>
+                  <span className={`font-mono text-xs md:text-sm font-bold uppercase ${hasKey ? 'text-yellow-400' : 'text-gray-500'}`}>
+                    {hasKey ? 'ACQUIRED' : 'MISSING'}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </>
       )}
 
       {/* ═══ PAUSE MENU ═══════════════════════════════════════════════════ */}
       {gameState === 'paused' && (
-        <div className="absolute inset-0 bg-black/85 pointer-events-auto flex flex-col items-center justify-center text-white font-mono z-40 backdrop-blur-sm">
-          <h2 className="text-5xl font-bold mb-6 tracking-widest text-red-600 drop-shadow-[0_0_15px_rgba(255,0,0,0.7)]">
+        <div className="absolute inset-0 bg-black/90 pointer-events-auto flex flex-col items-center justify-center text-white font-mono z-40 backdrop-blur-sm p-4 overflow-y-auto">
+          <h2 className="text-3xl md:text-5xl font-bold mb-4 md:mb-6 tracking-widest text-red-600 drop-shadow-[0_0_15px_rgba(255,0,0,0.7)]">
             GAME PAUSED
           </h2>
           
-          <div className="text-gray-400 text-sm grid grid-cols-2 gap-x-8 gap-y-2 mb-8 bg-black/60 p-6 border border-gray-800 rounded-md">
-            <div className="text-right text-gray-500 font-mono">W, A, S, D</div><div className="text-left text-gray-200">Move</div>
-            <div className="text-right text-gray-500 font-mono">Shift (Hold)</div><div className="text-left text-gray-200">Sprint</div>
-            <div className="text-right text-gray-500 font-mono">Left Ctrl / C</div><div className="text-left text-gray-200">Crouch</div>
-            <div className="text-right text-gray-500 font-mono">E</div><div className="text-left text-gray-200">Interact</div>
-            <div className="text-right text-gray-500 font-mono">F</div><div className="text-left text-amber-300">Toggle Flashlight</div>
-            <div className="text-right text-gray-500 font-mono">M</div><div className="text-left text-gray-200">Map</div>
+          <div className="text-gray-400 text-xs md:text-sm grid grid-cols-2 gap-x-6 gap-y-2 mb-6 bg-black/70 p-4 md:p-6 border border-gray-800 rounded-md max-w-md w-full">
+            {isTouchDevice ? (
+              <>
+                <div className="text-right text-gray-500 font-mono">Left Stick</div><div className="text-left text-gray-200">Move / Strafe</div>
+                <div className="text-right text-gray-500 font-mono">Right Screen Drag</div><div className="text-left text-gray-200">Look Around</div>
+                <div className="text-right text-gray-500 font-mono">✋ Button</div><div className="text-left text-gray-200">Interact</div>
+                <div className="text-right text-gray-500 font-mono">🏃 / 🧎</div><div className="text-left text-gray-200">Sprint / Crouch</div>
+                <div className="text-right text-gray-500 font-mono">🔦 / 🗺️</div><div className="text-left text-amber-300">Flashlight / Map</div>
+              </>
+            ) : (
+              <>
+                <div className="text-right text-gray-500 font-mono">W, A, S, D</div><div className="text-left text-gray-200">Move</div>
+                <div className="text-right text-gray-500 font-mono">Shift (Hold)</div><div className="text-left text-gray-200">Sprint</div>
+                <div className="text-right text-gray-500 font-mono">Left Ctrl / C</div><div className="text-left text-gray-200">Crouch</div>
+                <div className="text-right text-gray-500 font-mono">E</div><div className="text-left text-gray-200">Interact</div>
+                <div className="text-right text-gray-500 font-mono">F</div><div className="text-left text-amber-300">Toggle Flashlight</div>
+                <div className="text-right text-gray-500 font-mono">M</div><div className="text-left text-gray-200">Map</div>
+              </>
+            )}
           </div>
 
-          <div className="flex flex-col gap-3 w-64">
+          <div className="flex flex-col gap-3 w-56 md:w-64">
             <button 
               onClick={() => setGameState('playing')}
-              className="py-3 text-lg font-bold border border-gray-600 bg-gray-900/50 hover:bg-gray-800 hover:text-white transition-all duration-300 rounded cursor-pointer"
+              className="py-3 text-base md:text-lg font-bold border border-gray-600 bg-gray-900/50 hover:bg-gray-800 active:scale-95 hover:text-white transition-all duration-300 rounded cursor-pointer"
             >
               RESUME
             </button>
             <button 
               onClick={() => window.location.reload()}
-              className="py-3 text-lg font-bold border border-red-900 text-red-500 hover:bg-red-950/60 hover:text-red-300 transition-all duration-300 rounded cursor-pointer"
+              className="py-3 text-base md:text-lg font-bold border border-red-900 text-red-500 hover:bg-red-950/60 active:scale-95 hover:text-red-300 transition-all duration-300 rounded cursor-pointer"
             >
               RESTART
             </button>
@@ -304,34 +368,34 @@ export default function UI() {
 
       {/* ═══ GAME OVER SCREEN ═════════════════════════════════════════════ */}
       {gameState === 'gameover' && (
-        <div className="absolute inset-0 bg-red-950/95 pointer-events-auto flex flex-col items-center justify-center text-red-500 font-mono z-50 px-4">
-          <h2 className="text-7xl md:text-8xl font-black mb-4 tracking-widest text-red-600 drop-shadow-[0_0_30px_rgba(255,0,0,1)]">
+        <div className="absolute inset-0 bg-red-950/95 pointer-events-auto flex flex-col items-center justify-center text-red-500 font-mono z-50 px-4 py-6 overflow-y-auto">
+          <h2 className="text-5xl sm:text-7xl md:text-8xl font-black mb-3 md:mb-4 tracking-widest text-red-600 drop-shadow-[0_0_30px_rgba(255,0,0,1)]">
             YOU DIED
           </h2>
-          <p className="text-2xl md:text-3xl mb-10 text-red-800 font-serif italic">
+          <p className="text-lg sm:text-2xl md:text-3xl mb-8 md:mb-10 text-red-800 font-serif italic text-center">
             You became part of the mansion...
           </p>
           <button 
             onClick={() => window.location.reload()}
-            className="px-10 py-4 text-2xl font-bold border-2 border-red-700 bg-red-900/40 hover:bg-red-800 hover:text-white transition-all duration-300 shadow-[0_0_20px_rgba(255,0,0,0.6)] rounded cursor-pointer"
+            className="px-8 md:px-10 py-3 md:py-4 text-xl md:text-2xl font-bold border-2 border-red-700 bg-red-900/40 hover:bg-red-800 active:scale-95 hover:text-white transition-all duration-300 shadow-[0_0_20px_rgba(255,0,0,0.6)] rounded cursor-pointer"
           >
-            TRY AGAIN (R)
+            TRY AGAIN {isTouchDevice ? '' : '(R)'}
           </button>
         </div>
       )}
 
       {/* ═══ ESCAPE / WIN SCREEN ═══════════════════════════════════════════ */}
       {gameState === 'win' && (
-        <div className="absolute inset-0 bg-black/95 pointer-events-auto flex flex-col items-center justify-center text-white font-mono z-50 px-4">
-          <h2 className="text-7xl md:text-8xl font-black mb-4 tracking-widest text-white drop-shadow-[0_0_30px_rgba(255,255,255,1)]">
+        <div className="absolute inset-0 bg-black/95 pointer-events-auto flex flex-col items-center justify-center text-white font-mono z-50 px-4 py-6 overflow-y-auto">
+          <h2 className="text-5xl sm:text-7xl md:text-8xl font-black mb-3 md:mb-4 tracking-widest text-white drop-shadow-[0_0_30px_rgba(255,255,255,1)]">
             YOU ESCAPED
           </h2>
-          <p className="text-2xl md:text-3xl mb-10 text-gray-400 font-serif italic">
+          <p className="text-lg sm:text-2xl md:text-3xl mb-8 md:mb-10 text-gray-400 font-serif italic text-center">
             You survived the nightmare.
           </p>
           <button 
             onClick={() => window.location.reload()}
-            className="px-10 py-4 text-2xl font-bold border-2 border-white bg-white/10 hover:bg-white hover:text-black transition-all duration-300 rounded cursor-pointer"
+            className="px-8 md:px-10 py-3 md:py-4 text-xl md:text-2xl font-bold border-2 border-white bg-white/10 hover:bg-white active:scale-95 hover:text-black transition-all duration-300 rounded cursor-pointer"
           >
             PLAY AGAIN
           </button>
@@ -357,3 +421,4 @@ export default function UI() {
     </div>
   );
 }
+

@@ -1,11 +1,10 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
+import { useRef, useState } from 'react';
+import { useFrame } from '@react-three/fiber';
 import { RigidBody, RapierRigidBody } from '@react-three/rapier';
 import { Vector3 } from 'three';
 import { useGameStore } from '@/store/useGameStore';
-import { PositionalAudio } from '@react-three/drei';
 
 const WAYPOINTS = [
   new Vector3(10, 0, 10),
@@ -21,7 +20,6 @@ const SIGHT_RANGE = 15;
 export default function Monster() {
   const { gameState, setGameState } = useGameStore();
   const bodyRef = useRef<RapierRigidBody>(null);
-  const { camera } = useThree();
   
   const [state, setState] = useState<'patrol' | 'chase'>('patrol');
   const [currentWaypoint, setCurrentWaypoint] = useState(0);
@@ -30,10 +28,10 @@ export default function Monster() {
   const targetVec = useRef(new Vector3());
   const dirVec = useRef(new Vector3());
   
-  useFrame((_, rawDelta) => {
+  useFrame((fState) => {
     if (!bodyRef.current || gameState !== 'playing') return;
 
-    const delta = Math.min(rawDelta, 0.05);
+    const camera = fState.camera;
     const monsterPos = bodyRef.current.translation();
     mPosVec.current.set(monsterPos.x, monsterPos.y, monsterPos.z);
     

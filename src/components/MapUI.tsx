@@ -67,46 +67,55 @@ export default function MapUI() {
     <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/85 pointer-events-auto backdrop-blur-md">
       <div className="relative w-full max-w-4xl aspect-[2/3] max-h-[90vh] bg-[#151410] border-4 border-[#3a3525] shadow-[0_0_60px_rgba(0,0,0,1)] rounded-sm p-6 overflow-hidden font-mono text-[#b3a88a]">
         {/* Header Bar */}
-        <div className="flex justify-between items-center border-b border-[#3a3525] pb-3 mb-3">
+        <div className="flex justify-between items-center border-b border-[#3a3525] pb-2 mb-2">
           <div>
-            <div className="text-2xl md:text-3xl tracking-widest font-black uppercase text-red-700 drop-shadow-md">
+            <div className="text-xl md:text-3xl tracking-widest font-black uppercase text-red-700 drop-shadow-md">
               MANSION BLUEPRINT
             </div>
-            <div ref={floorSubtextRef} className="text-xs text-gray-400 tracking-wider">
+            <div ref={floorSubtextRef} className="text-[10px] md:text-xs text-gray-400 tracking-wider truncate max-w-[200px] md:max-w-none">
               GROUND FLOOR - ENTRANCE HALL & KITCHEN
             </div>
           </div>
-          <div
-            ref={floorTextRef}
-            className="text-4xl md:text-5xl font-black tracking-widest text-red-600 drop-shadow-[0_0_12px_rgba(255,0,0,0.5)]"
-          >
-            1F
+          <div className="flex items-center gap-4">
+            <div
+              ref={floorTextRef}
+              className="text-3xl md:text-5xl font-black tracking-widest text-red-600 drop-shadow-[0_0_12px_rgba(255,0,0,0.5)]"
+            >
+              1F
+            </div>
+            {/* Mobile / Desktop Close Button */}
+            <button
+              onClick={() => useGameStore.getState().setShowMap(false)}
+              className="px-3 py-1 rounded bg-red-950/80 border border-red-700 text-red-300 font-bold text-xs md:text-sm hover:bg-red-800 active:scale-95 transition-all cursor-pointer shadow-md"
+            >
+              ✕ CLOSE
+            </button>
           </div>
         </div>
 
         {/* Legend */}
-        <div className="absolute bottom-4 left-6 right-6 flex flex-wrap items-center justify-between text-xs bg-black/70 p-2.5 border border-[#3a3525] rounded z-20 backdrop-blur-sm">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-red-600 rounded-full border border-white animate-pulse" />
+        <div className="absolute bottom-2 md:bottom-4 left-3 md:left-6 right-3 md:right-6 flex flex-wrap items-center justify-between text-[10px] md:text-xs bg-black/80 p-2 md:p-2.5 border border-[#3a3525] rounded z-20 backdrop-blur-sm">
+          <div className="flex items-center gap-1.5 md:gap-2">
+            <div className="w-2.5 h-2.5 bg-red-600 rounded-full border border-white animate-pulse" />
             <span className="text-gray-300 font-semibold">Player</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3.5 h-3.5 bg-amber-500/20 border border-amber-400 rounded-sm flex items-center justify-center text-[10px] text-amber-300 font-bold">
+          <div className="flex items-center gap-1.5 md:gap-2">
+            <div className="w-3 h-3 bg-amber-500/20 border border-amber-400 rounded-sm flex items-center justify-center text-[8px] md:text-[10px] text-amber-300 font-bold">
               🔦
             </div>
             <span className="text-amber-300 font-semibold">Flashlight</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3.5 h-3.5 bg-yellow-500/20 border border-yellow-400 rounded-sm flex items-center justify-center text-[10px] text-yellow-300 font-bold">
+          <div className="flex items-center gap-1.5 md:gap-2">
+            <div className="w-3 h-3 bg-yellow-500/20 border border-yellow-400 rounded-sm flex items-center justify-center text-[8px] md:text-[10px] text-yellow-300 font-bold">
               🗝
             </div>
             <span className="text-yellow-400 font-semibold">Key Pedestal</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-1.5 bg-amber-700 rounded-sm" />
+          <div className="flex items-center gap-1.5 md:gap-2">
+            <div className="w-3.5 h-1.5 bg-amber-700 rounded-sm" />
             <span className="text-gray-300 font-semibold">Door / Archway</span>
           </div>
-          <div className="text-gray-500 hidden md:block">Press [M] to Close</div>
+          <div className="text-gray-400 font-mono text-[10px] md:text-xs">Tap [✕] or [M] to Close</div>
         </div>
 
         {/* Blueprint Map Container */}

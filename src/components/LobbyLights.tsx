@@ -45,7 +45,7 @@ function SingleLobbyHangingLamp({
     // 2. Dynamic Organic Voltage Dim-and-Bright Logic
     if (lightRef.current && bulbMeshRef.current) {
       const noise = Math.sin(time * 2.5) * 0.25 + Math.sin(time * 7.1) * 0.15;
-      let flickerMult = 1.0 + noise;
+      const flickerMult = 1.0 + noise;
 
       const currentInt = lightRef.current.intensity;
       const targetInt = baseIntensity * Math.max(0.1, flickerMult);

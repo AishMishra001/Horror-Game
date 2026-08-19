@@ -84,8 +84,6 @@ function VintageRetroFridge({
   const doorGroupRef = useRef<THREE.Group>(null);
   const lightRef = useRef<THREE.PointLight>(null);
 
-  isOpenRef.current = isOpen;
-
   useFrame((_, rawDelta) => {
     const dt = Math.min(rawDelta, 0.05);
     if (doorGroupRef.current) {

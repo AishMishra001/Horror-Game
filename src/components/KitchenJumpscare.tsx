@@ -1,7 +1,7 @@
 'use client';
 
-import { useRef, useMemo } from 'react';
-import { useFrame, useThree } from '@react-three/fiber';
+import { useRef } from 'react';
+import { useFrame } from '@react-three/fiber';
 import { Vector3, PointLight, Group } from 'three';
 import { useGameStore } from '@/store/useGameStore';
 import { useTexture } from '@react-three/drei';
@@ -165,23 +165,20 @@ function RealisticGhostHand({ isLeft }: { isLeft: boolean }) {
 
 // ─── Main Kitchen Jumpscare Horror Monster (Face & Reaching Hands Only) ────────
 export default function KitchenJumpscare() {
-  const gameState = useGameStore((s) => s.gameState);
-  const isKitchenJumpscareTriggered = useGameStore((s) => s.isKitchenJumpscareTriggered);
   const isKitchenJumpscareActive = useGameStore((s) => s.isKitchenJumpscareActive);
 
-  const { camera } = useThree();
   const jumpscareGroupRef = useRef<Group>(null);
   const headGroupRef = useRef<Group>(null);
   const strobeLightRef = useRef<PointLight>(null);
   const paleLightRef = useRef<PointLight>(null);
 
-  // Load Ravi Kishan face texture
-  const raviFaceTex = useTexture('/ravi Face.png');
-  useMemo(() => {
-    raviFaceTex.wrapS = THREE.ClampToEdgeWrapping;
-    raviFaceTex.wrapT = THREE.ClampToEdgeWrapping;
-    raviFaceTex.colorSpace = THREE.SRGBColorSpace;
-  }, [raviFaceTex]);
+  // Load Ravi Kishan face texture with onLoad callback
+  const raviFaceTex = useTexture('/ravi Face.png', (tex) => {
+    const t = tex as THREE.Texture;
+    t.wrapS = THREE.ClampToEdgeWrapping;
+    t.wrapT = THREE.ClampToEdgeWrapping;
+    t.colorSpace = THREE.SRGBColorSpace;
+  });
 
   // Pre-allocated vectors for 60 FPS zero garbage collection
   const camFwd = useRef(new Vector3());
@@ -189,6 +186,7 @@ export default function KitchenJumpscare() {
   const camPos = useRef(new Vector3());
 
   useFrame((state) => {
+    const camera = state.camera;
     const store = useGameStore.getState();
 
     // 1. Fail-safe ground floor kitchen coordinate trigger

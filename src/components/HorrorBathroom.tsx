@@ -696,8 +696,6 @@ function InteractableBathroomDoor({ woodTex }: { woodTex: THREE.Texture }) {
   const canInteractRef = useRef(false);
   const pivotRef = useRef<THREE.Group>(null);
 
-  isOpenRef.current = isOpen;
-
   useFrame((_, rawDelta) => {
     const delta = Math.min(rawDelta, 0.05);
     const targetRot = isOpen ? Math.PI * 0.52 : 0;
