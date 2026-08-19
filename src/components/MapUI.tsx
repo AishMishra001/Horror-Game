@@ -139,8 +139,16 @@ export default function MapUI() {
               <span>DINING ROOM</span>
             </div>
 
+            {/* Decayed Horror Bathroom / Restroom */}
+            <div className="absolute left-[69%] top-[4%] w-[28%] h-[32%] border-2 border-[#2a4d50] bg-[#142628]/40 flex flex-col items-center justify-center text-xs font-bold text-cyan-300 shadow-inner p-1 text-center">
+              <span>BATHROOM</span>
+              <span className="text-[9px] text-cyan-400 mt-1 bg-cyan-950/80 px-1.5 py-0.5 rounded border border-cyan-500/50">
+                🛁 Decayed Tub & Scrawl
+              </span>
+            </div>
+
             {/* Living Room / Parlor */}
-            <div className="absolute left-[69%] top-[4%] w-[28%] h-[60%] border-2 border-[#3a3525] bg-[#1c1822]/40 flex flex-col items-center justify-center text-xs font-bold text-purple-200">
+            <div className="absolute left-[69%] top-[38%] w-[28%] h-[26%] border-2 border-[#3a3525] bg-[#1c1822]/40 flex flex-col items-center justify-center text-xs font-bold text-purple-200">
               <span>BALLROOM & PARLOR</span>
             </div>
 

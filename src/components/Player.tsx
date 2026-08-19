@@ -43,6 +43,10 @@ export default function Player() {
     right: false,
     crouch: false,
     sprint: false,
+    turnLeft: false,
+    turnRight: false,
+    turnUp: false,
+    turnDown: false,
   });
 
   const staminaRef = useRef(100);
@@ -62,6 +66,10 @@ export default function Player() {
         case 'KeyS': m.backward = true; break;
         case 'KeyA': m.left = true; break;
         case 'KeyD': m.right = true; break;
+        case 'ArrowLeft': m.turnLeft = true; break;
+        case 'ArrowRight': m.turnRight = true; break;
+        case 'ArrowUp': m.turnUp = true; break;
+        case 'ArrowDown': m.turnDown = true; break;
         case 'ShiftLeft':
         case 'ShiftRight': m.sprint = true; break;
         case 'KeyM': 
@@ -88,6 +96,10 @@ export default function Player() {
         case 'KeyS': m.backward = false; break;
         case 'KeyA': m.left = false; break;
         case 'KeyD': m.right = false; break;
+        case 'ArrowLeft': m.turnLeft = false; break;
+        case 'ArrowRight': m.turnRight = false; break;
+        case 'ArrowUp': m.turnUp = false; break;
+        case 'ArrowDown': m.turnDown = false; break;
         case 'ShiftLeft':
         case 'ShiftRight': m.sprint = false; break;
         case 'KeyC':
@@ -118,6 +130,12 @@ export default function Player() {
     // Clamp delta to prevent physics explosion / micro-stutters during lag spikes
     const delta = Math.min(rawDelta, 0.05);
     const m = movementRef.current;
+
+    // 0. Keyboard Camera Rotation Fallback
+    if (m.turnLeft) camera.rotation.y += delta * 2.2;
+    if (m.turnRight) camera.rotation.y -= delta * 2.2;
+    if (m.turnUp) camera.rotation.x = Math.max(-Math.PI / 2.5, camera.rotation.x + delta * 1.5);
+    if (m.turnDown) camera.rotation.x = Math.min(Math.PI / 2.5, camera.rotation.x - delta * 1.5);
 
     // 1. Sprint & Stamina Logic (without causing React re-renders)
     const isMoving = m.forward || m.backward || m.left || m.right;

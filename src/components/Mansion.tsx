@@ -8,6 +8,7 @@ import { Mesh } from 'three';
 import { useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 import HorrorKitchen from './HorrorKitchen';
+import HorrorBathroom from './HorrorBathroom';
 import LobbyLights from './LobbyLights';
 
 const doorAudio = typeof window !== 'undefined' ? new Audio('/stairs and doors.mp3') : null;
@@ -816,12 +817,16 @@ export default function Mansion() {
       <Wall pos={[0, 5, -20.5]} size={[32, 10, 1]} />
       <Wall pos={[0, 5, 25.5]} size={[32, 10, 1]} />
 
-      {/* ═══ GROUND FLOOR INNER WALLS & KITCHEN ═══════════════════════════════ */}
+      {/* ═══ GROUND FLOOR INNER WALLS, KITCHEN & BATHROOM ═════════════════════ */}
+      {/* West Wing (Kitchen & Dining) */}
       <Wall pos={[-10, 2, -5]} size={[10, 4, 0.5]} texMap={grungeWallTex} />
       <Wall pos={[-5, 2, -14.35]} size={[0.5, 4, 11.3]} texMap={grungeWallTex} />
       <Wall pos={[-5, 2, -5.65]} size={[0.5, 4, 1.3]} texMap={grungeWallTex} />
       <Wall pos={[-5, 2, 2.5]} size={[0.5, 4, 15]} />
-      <Wall pos={[5, 2, -5]} size={[0.5, 4, 30]} />
+
+      {/* East Wing (Bathroom & Ballroom) */}
+      <Wall pos={[10, 2, -5]} size={[10, 4, 0.5]} texMap={grungeWallTex} />
+      <Wall pos={[5, 2, 2.5]} size={[0.5, 4, 15]} />
 
       {/* Victorian Double Kitchen Door */}
       <InteractableKitchenDoor wallTex={grungeWallTex} woodTex={doorWoodTex} />
@@ -848,8 +853,11 @@ export default function Mansion() {
         </RigidBody>
       )}
 
-      {/* Ground Floor Horror Kitchen */}
+      {/* Ground Floor Horror Kitchen (West Wing) */}
       <HorrorKitchen position={[-10, 0, -12.5]} />
+
+      {/* Ground Floor Horror Bathroom (East Wing) */}
+      <HorrorBathroom position={[10, 0, -12.5]} />
 
       {/* ═══ 2ND FLOOR INTERIOR WALLS & ARCHWAYS (Y = 5.0 to 10.0) ═══════════ */}
       {/* North-South Dividing Walls */}

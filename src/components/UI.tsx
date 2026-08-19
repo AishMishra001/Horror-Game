@@ -342,18 +342,13 @@ export default function UI() {
       {isKitchenJumpscareActive && (
         <div className="fixed inset-0 z-50 pointer-events-none overflow-hidden horror-shake-effect">
           {/* Intense blood-red horror vignette & rapid pulse */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_20%,rgba(80,0,0,0.8)_60%,rgba(160,0,0,0.95)_100%)] horror-red-flash" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_25%,rgba(60,0,0,0.7)_65%,rgba(140,0,0,0.92)_100%)] horror-red-flash" />
           
           {/* Crimson flash border and high trauma vignette */}
-          <div className="absolute inset-0 border-[16px] border-red-600/90 shadow-[inset_0_0_100px_rgba(255,0,0,0.9)] opacity-85" />
+          <div className="absolute inset-0 border-[12px] border-red-600/80 shadow-[inset_0_0_80px_rgba(255,0,0,0.85)] opacity-80" />
           
-          {/* Creepy TV scanlines & static noise lines */}
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.6)_50%)] bg-[length:100%_4px] opacity-75" />
-          
-          {/* Bloody glitch text flash */}
-          <div className="absolute top-[20%] left-1/2 -translate-x-1/2 -translate-y-1/2 font-mono text-red-600 text-5xl md:text-7xl font-black tracking-[0.35em] drop-shadow-[0_0_35px_rgba(255,0,0,1)] uppercase animate-pulse select-none">
-            RAVI KISHAN
-          </div>
+          {/* Subtle analog scanlines */}
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.4)_50%)] bg-[length:100%_4px] opacity-60" />
         </div>
       )}
 

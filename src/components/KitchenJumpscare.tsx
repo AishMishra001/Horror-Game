@@ -7,136 +7,89 @@ import { useGameStore } from '@/store/useGameStore';
 import { useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 
-// ─── Long Spindly Claw Arm Component ──────────────────────────────────────────
-function MonsterArm({ isLeft }: { isLeft: boolean }) {
-  const side = isLeft ? -1 : 1;
-  const upperArmRef = useRef<Group>(null);
-  const forearmRef = useRef<Group>(null);
-  const handRef = useRef<Group>(null);
+// ─── Realistic Articulated Ghost Finger Component ─────────────────────────────
+function RealisticFinger({
+  length,
+  thickness,
+  spreadAngle,
+  fingerIndex,
+}: {
+  length: number;
+  thickness: number;
+  spreadAngle: number;
+  fingerIndex: number;
+}) {
+  const joint1Ref = useRef<Group>(null);
+  const joint2Ref = useRef<Group>(null);
+  const joint3Ref = useRef<Group>(null);
+
+  const seg1Len = length * 0.42;
+  const seg2Len = length * 0.33;
+  const seg3Len = length * 0.25;
 
   useFrame((state) => {
-    const time = state.clock.elapsedTime * 8;
-    const twitch = Math.sin(time * 3 + (isLeft ? 0 : 2)) * 0.15;
-    const lungeReach = Math.sin(time * 1.5) * 0.12;
+    const time = state.clock.elapsedTime * 14;
+    const offset = fingerIndex * 0.55;
+    // Horrific twitching and claw grasping animation
+    const grasp = (Math.sin(time + offset) * 0.35 + 0.45);
+    const twitch = (Math.sin(time * 3.2 + offset) * 0.12);
 
-    if (upperArmRef.current) {
-      upperArmRef.current.rotation.z = side * (0.35 + twitch * 0.5);
-      upperArmRef.current.rotation.x = -0.55 + lungeReach;
-      upperArmRef.current.rotation.y = side * (0.2 + twitch * 0.3);
+    if (joint1Ref.current) {
+      joint1Ref.current.rotation.x = -grasp * 0.6 + twitch;
+      joint1Ref.current.rotation.z = spreadAngle * 0.7;
     }
-    if (forearmRef.current) {
-      forearmRef.current.rotation.x = -0.7 - lungeReach * 1.2;
-      forearmRef.current.rotation.y = side * -0.35;
+    if (joint2Ref.current) {
+      joint2Ref.current.rotation.x = -grasp * 0.9 + twitch * 0.8;
     }
-    if (handRef.current) {
-      handRef.current.rotation.x = 0.4 + twitch * 0.8;
-      handRef.current.rotation.z = side * (0.2 + twitch * 0.4);
+    if (joint3Ref.current) {
+      joint3Ref.current.rotation.x = -grasp * 1.1 + twitch * 0.6;
     }
   });
 
   return (
-    <group position={[side * 0.42, 0.2, 0]}>
-      {/* Shoulder Joint */}
-      <mesh position={[0, 0, 0]}>
-        <sphereGeometry args={[0.08, 8, 8]} />
-        <meshStandardMaterial color="#1a1412" roughness={0.9} />
-      </mesh>
-
-      {/* Upper Arm (Elongated) */}
-      <group ref={upperArmRef}>
-        <mesh position={[side * 0.18, -0.45, 0.1]} rotation={[0.2, 0, side * -0.2]}>
-          <cylinderGeometry args={[0.045, 0.035, 0.95, 6]} />
-          <meshStandardMaterial color="#1c1613" roughness={0.85} />
-        </mesh>
-
-        {/* Elbow Joint */}
-        <group position={[side * 0.35, -0.9, 0.2]} ref={forearmRef}>
-          <mesh>
-            <sphereGeometry args={[0.065, 8, 8]} />
-            <meshStandardMaterial color="#140f0d" roughness={0.9} />
-          </mesh>
-
-          {/* Forearm (Extra Long & Spindly Reaching Forward) */}
-          <mesh position={[side * 0.12, -0.45, -0.35]} rotation={[-0.7, side * 0.2, side * -0.1]}>
-            <cylinderGeometry args={[0.038, 0.026, 1.05, 6]} />
-            <meshStandardMaterial color="#1a1411" roughness={0.85} />
-          </mesh>
-
-          {/* Wrist & Claw Hand */}
-          <group position={[side * 0.24, -0.95, -0.75]} ref={handRef}>
-            <mesh>
-              <boxGeometry args={[0.08, 0.14, 0.05]} />
-              <meshStandardMaterial color="#181210" roughness={0.9} />
-            </mesh>
-
-            {/* 5 Long Sharp Curved Claws */}
-            {[-0.04, -0.02, 0, 0.02, 0.04].map((fingerX, idx) => (
-              <group key={`claw-${idx}`} position={[fingerX, -0.07, -0.02]}>
-                {/* Finger Segment 1 */}
-                <mesh position={[0, -0.12, -0.08]} rotation={[-0.75, 0, (idx - 2) * 0.15]}>
-                  <cylinderGeometry args={[0.01, 0.007, 0.25, 4]} />
-                  <meshStandardMaterial color="#100b09" roughness={0.7} />
-                </mesh>
-                {/* Sharp Curved Claw Tip */}
-                <mesh position={[0, -0.26, -0.18]} rotation={[-1.2, 0, (idx - 2) * 0.2]}>
-                  <coneGeometry args={[0.009, 0.18, 4]} />
-                  <meshStandardMaterial color="#0a0504" roughness={0.5} metalness={0.4} />
-                </mesh>
-              </group>
-            ))}
-          </group>
-        </group>
-      </group>
-    </group>
-  );
-}
-
-// ─── Long Spindly Leg Component ────────────────────────────────────────────────
-function MonsterLeg({ isLeft }: { isLeft: boolean }) {
-  const side = isLeft ? -1 : 1;
-  const legRef = useRef<Group>(null);
-
-  useFrame((state) => {
-    const time = state.clock.elapsedTime * 6;
-    const twitch = Math.sin(time * 2.5 + (isLeft ? 0 : 1.5)) * 0.08;
-    if (legRef.current) {
-      legRef.current.rotation.z = side * (0.15 + twitch);
-      legRef.current.rotation.x = 0.2 + twitch * 0.5;
-    }
-  });
-
-  return (
-    <group position={[side * 0.22, -0.75, 0]} ref={legRef}>
-      {/* Hip Joint */}
+    <group ref={joint1Ref}>
+      {/* Knuckle Joint 1 */}
       <mesh>
-        <sphereGeometry args={[0.07, 6, 6]} />
-        <meshStandardMaterial color="#1a1412" roughness={0.9} />
+        <sphereGeometry args={[thickness * 1.15, 8, 8]} />
+        <meshStandardMaterial color="#2d2825" roughness={0.7} />
       </mesh>
 
-      {/* Thigh (Elongated) */}
-      <mesh position={[side * 0.05, -0.55, 0.05]} rotation={[-0.1, 0, side * -0.08]}>
-        <cylinderGeometry args={[0.05, 0.038, 1.15, 6]} />
-        <meshStandardMaterial color="#1c1512" roughness={0.88} />
+      {/* Phalanx 1 */}
+      <mesh position={[0, seg1Len / 2, -seg1Len * 0.1]} rotation={[0.2, 0, 0]}>
+        <cylinderGeometry args={[thickness * 0.9, thickness, seg1Len, 7]} />
+        <meshStandardMaterial color="#423b37" roughness={0.65} metalness={0.1} />
       </mesh>
 
-      {/* Knee Joint */}
-      <group position={[side * 0.1, -1.15, 0.1]}>
+      {/* Joint 2 */}
+      <group position={[0, seg1Len, -seg1Len * 0.2]} ref={joint2Ref}>
         <mesh>
-          <sphereGeometry args={[0.055, 6, 6]} />
-          <meshStandardMaterial color="#130e0c" roughness={0.9} />
+          <sphereGeometry args={[thickness * 0.95, 8, 8]} />
+          <meshStandardMaterial color="#2a2522" roughness={0.7} />
         </mesh>
 
-        {/* Shin (Spindly & Long) */}
-        <mesh position={[0, -0.65, -0.1]} rotation={[0.2, 0, 0]}>
-          <cylinderGeometry args={[0.036, 0.024, 1.35, 6]} />
-          <meshStandardMaterial color="#181210" roughness={0.88} />
+        {/* Phalanx 2 */}
+        <mesh position={[0, seg2Len / 2, -seg2Len * 0.15]} rotation={[0.3, 0, 0]}>
+          <cylinderGeometry args={[thickness * 0.75, thickness * 0.85, seg2Len, 7]} />
+          <meshStandardMaterial color="#3d3733" roughness={0.65} />
         </mesh>
 
-        {/* Sharp Ankle & Talons */}
-        <group position={[0, -1.35, -0.2]}>
-          <mesh rotation={[-Math.PI / 2, 0, 0]}>
-            <coneGeometry args={[0.04, 0.28, 4]} />
-            <meshStandardMaterial color="#0b0604" roughness={0.6} />
+        {/* Joint 3 & Claw Tip */}
+        <group position={[0, seg2Len, -seg2Len * 0.3]} ref={joint3Ref}>
+          <mesh>
+            <sphereGeometry args={[thickness * 0.8, 6, 6]} />
+            <meshStandardMaterial color="#221e1b" roughness={0.7} />
+          </mesh>
+
+          {/* Phalanx 3 */}
+          <mesh position={[0, seg3Len / 2, -seg3Len * 0.2]} rotation={[0.4, 0, 0]}>
+            <cylinderGeometry args={[thickness * 0.55, thickness * 0.7, seg3Len, 6]} />
+            <meshStandardMaterial color="#36302d" roughness={0.6} />
+          </mesh>
+
+          {/* Sharp Black Talon / Fingernail */}
+          <mesh position={[0, seg3Len + 0.04, -seg3Len * 0.45]} rotation={[-1.2, 0, 0]}>
+            <coneGeometry args={[thickness * 0.65, 0.14, 6]} />
+            <meshStandardMaterial color="#0f0c0a" roughness={0.3} metalness={0.6} />
           </mesh>
         </group>
       </group>
@@ -144,100 +97,90 @@ function MonsterLeg({ isLeft }: { isLeft: boolean }) {
   );
 }
 
-// ─── Long Messy Creepy Hair Strands ───────────────────────────────────────────
-function MonsterHair() {
-  const hairGroupRef = useRef<Group>(null);
-
-  // Generate deterministic hair strands cascading down and framing the face
-  const hairStrands = useMemo(() => {
-    const strands: Array<{
-      id: number;
-      x: number;
-      y: number;
-      z: number;
-      rotX: number;
-      rotY: number;
-      rotZ: number;
-      length: number;
-      thickness: number;
-    }> = [];
-
-    // Strands around top, temples, sides, and back
-    for (let i = 0; i < 36; i++) {
-      const angle = (i / 36) * Math.PI * 2;
-      const isFront = Math.sin(angle) > 0.4;
-      const radius = isFront ? 0.32 : 0.34;
-      const hx = Math.cos(angle) * radius;
-      const hz = Math.sin(angle) * radius * 0.85;
-      const hy = 0.3 + Math.sin(i * 3.7) * 0.08;
-      const len = 0.7 + Math.sin(i * 5.1) * 0.35 + (isFront ? -0.15 : 0.25);
-      const th = 0.012 + (i % 3) * 0.005;
-
-      strands.push({
-        id: i,
-        x: hx,
-        y: hy,
-        z: hz,
-        rotX: (Math.sin(i * 2.3) * 0.3) + (isFront ? 0.25 : -0.2),
-        rotY: angle,
-        rotZ: Math.cos(i * 1.7) * 0.3 + (hx > 0 ? 0.15 : -0.15),
-        length: len,
-        thickness: th,
-      });
-    }
-    return strands;
-  }, []);
+// ─── Realistic Grasping Ghost Hand Component ──────────────────────────────────
+function RealisticGhostHand({ isLeft }: { isLeft: boolean }) {
+  const handGroupRef = useRef<Group>(null);
+  const side = isLeft ? -1 : 1;
 
   useFrame((state) => {
-    const time = state.clock.elapsedTime * 12;
-    if (hairGroupRef.current) {
-      hairGroupRef.current.children.forEach((child, idx) => {
-        const offset = idx * 0.4;
-        child.rotation.z = Math.sin(time + offset) * 0.12 + (child.position.x > 0 ? 0.15 : -0.15);
-        child.rotation.x = Math.cos(time * 0.8 + offset) * 0.1;
-      });
+    const time = state.clock.elapsedTime * 10;
+    const lungeX = Math.sin(time * 1.8 + (isLeft ? 0 : 1.5)) * 0.04;
+    const lungeY = Math.cos(time * 1.5) * 0.05;
+    const lungeZ = Math.sin(time * 2.2) * 0.06;
+    const shakeRot = (Math.sin(time * 3.5) + Math.cos(time * 4.2)) * 0.08;
+
+    if (handGroupRef.current) {
+      handGroupRef.current.position.x = side * 0.52 + lungeX;
+      handGroupRef.current.position.y = -0.15 + lungeY;
+      handGroupRef.current.position.z = -0.58 + lungeZ;
+
+      handGroupRef.current.rotation.z = side * (-0.35 + shakeRot * 0.5);
+      handGroupRef.current.rotation.y = side * (-0.45 + shakeRot * 0.4);
+      handGroupRef.current.rotation.x = -0.4 + shakeRot * 0.6;
     }
   });
 
   return (
-    <group position={[0, 0.45, 0]} ref={hairGroupRef}>
-      {hairStrands.map((strand) => (
-        <group
-          key={`hair-${strand.id}`}
-          position={[strand.x, strand.y, strand.z]}
-          rotation={[strand.rotX, strand.rotY, strand.rotZ]}
-        >
-          {/* Main Hair Strand */}
-          <mesh position={[0, -strand.length / 2, 0]}>
-            <cylinderGeometry args={[strand.thickness * 0.6, strand.thickness, strand.length, 4]} />
-            <meshStandardMaterial
-              color="#090706"
-              roughness={0.95}
-              metalness={0.1}
-            />
-          </mesh>
-        </group>
-      ))}
+    <group ref={handGroupRef}>
+      {/* Palm Base */}
+      <mesh position={[0, 0, 0]} rotation={[0.2, 0, 0]}>
+        <boxGeometry args={[0.22, 0.28, 0.06]} />
+        <meshStandardMaterial color="#3c3632" roughness={0.7} metalness={0.1} />
+      </mesh>
+
+      {/* Forearm Stump fading into darkness */}
+      <mesh position={[0, -0.35, 0.15]} rotation={[0.4, 0, 0]}>
+        <cylinderGeometry args={[0.09, 0.12, 0.55, 8]} />
+        <meshStandardMaterial color="#1a1614" roughness={0.9} />
+      </mesh>
+
+      {/* 5 Articulated Fingers */}
+      {/* Thumb */}
+      <group position={[side * -0.11, -0.05, 0.02]} rotation={[0, side * 0.7, side * 0.6]}>
+        <RealisticFinger length={0.24} thickness={0.024} spreadAngle={side * -0.3} fingerIndex={0} />
+      </group>
+
+      {/* Index */}
+      <group position={[side * -0.07, 0.14, 0]} rotation={[0, 0, side * -0.15]}>
+        <RealisticFinger length={0.32} thickness={0.022} spreadAngle={side * -0.12} fingerIndex={1} />
+      </group>
+
+      {/* Middle */}
+      <group position={[side * -0.02, 0.155, 0]} rotation={[0, 0, 0]}>
+        <RealisticFinger length={0.36} thickness={0.023} spreadAngle={0} fingerIndex={2} />
+      </group>
+
+      {/* Ring */}
+      <group position={[side * 0.035, 0.145, 0]} rotation={[0, 0, side * 0.1]}>
+        <RealisticFinger length={0.33} thickness={0.021} spreadAngle={side * 0.1} fingerIndex={3} />
+      </group>
+
+      {/* Pinky */}
+      <group position={[side * 0.08, 0.115, 0]} rotation={[0, 0, side * 0.25]}>
+        <RealisticFinger length={0.26} thickness={0.018} spreadAngle={side * 0.22} fingerIndex={4} />
+      </group>
     </group>
   );
 }
 
-// ─── Main Kitchen Jumpscare Horror Monster ──────────────────────────────────────
+// ─── Main Kitchen Jumpscare Horror Monster (Face & Reaching Hands Only) ────────
 export default function KitchenJumpscare() {
   const gameState = useGameStore((s) => s.gameState);
   const isKitchenJumpscareTriggered = useGameStore((s) => s.isKitchenJumpscareTriggered);
   const isKitchenJumpscareActive = useGameStore((s) => s.isKitchenJumpscareActive);
 
   const { camera } = useThree();
-  const monsterGroupRef = useRef<Group>(null);
+  const jumpscareGroupRef = useRef<Group>(null);
   const headGroupRef = useRef<Group>(null);
-  const pointLightRef = useRef<PointLight>(null);
+  const strobeLightRef = useRef<PointLight>(null);
+  const paleLightRef = useRef<PointLight>(null);
 
   // Load Ravi Kishan face texture
   const raviFaceTex = useTexture('/ravi Face.png');
   useMemo(() => {
     raviFaceTex.wrapS = THREE.ClampToEdgeWrapping;
     raviFaceTex.wrapT = THREE.ClampToEdgeWrapping;
+    raviFaceTex.colorSpace = THREE.SRGBColorSpace;
   }, [raviFaceTex]);
 
   // Pre-allocated vectors for 60 FPS zero garbage collection
@@ -260,7 +203,7 @@ export default function KitchenJumpscare() {
     }
 
     // 2. Animate and lock monster directly onto player's face if active
-    if (store.gameState !== 'playing' || !store.isKitchenJumpscareActive || !monsterGroupRef.current) {
+    if (store.gameState !== 'playing' || !store.isKitchenJumpscareActive || !jumpscareGroupRef.current) {
       return;
     }
 
@@ -271,36 +214,39 @@ export default function KitchenJumpscare() {
     camPos.current.copy(camera.position);
 
     // Violent jumpscare lunge distance (lunges aggressively into the camera lens)
-    const lungeDist = 0.95 + Math.sin(time * 24) * 0.08 - Math.sin(time * 6) * 0.15;
+    const lungeDist = 0.82 + Math.sin(time * 26) * 0.05 - Math.sin(time * 5) * 0.1;
 
-    // Monster position right in front of the camera
+    // Monster position directly centered on camera
     targetPos.current.copy(camPos.current).addScaledVector(camFwd.current, lungeDist);
-    
-    // Add horrific micro-jitter/violent spasm motion
-    const jitterX = (Math.sin(time * 50) + Math.cos(time * 37)) * 0.022;
-    const jitterY = (Math.cos(time * 48) + Math.sin(time * 31)) * 0.022 - 0.12; // slightly lower so face aligns with eyes
-    const jitterZ = Math.sin(time * 42) * 0.018;
+
+    // Horrific micro-jitter / violent camera-relative spasm
+    const jitterX = (Math.sin(time * 55) + Math.cos(time * 42)) * 0.016;
+    const jitterY = (Math.cos(time * 52) + Math.sin(time * 36)) * 0.016 - 0.02;
+    const jitterZ = Math.sin(time * 48) * 0.014;
 
     targetPos.current.x += jitterX;
     targetPos.current.y += jitterY;
     targetPos.current.z += jitterZ;
 
-    monsterGroupRef.current.position.copy(targetPos.current);
+    jumpscareGroupRef.current.position.copy(targetPos.current);
 
     // Face directly towards camera with violent head snaps
-    monsterGroupRef.current.lookAt(camPos.current);
+    jumpscareGroupRef.current.lookAt(camPos.current);
 
     if (headGroupRef.current) {
-      const snapX = Math.sin(time * 35) * 0.12;
-      const snapY = Math.cos(time * 28) * 0.15;
-      const snapZ = Math.sin(time * 45) * 0.18;
+      const snapX = Math.sin(time * 38) * 0.09;
+      const snapY = Math.cos(time * 32) * 0.12;
+      const snapZ = Math.sin(time * 50) * 0.14;
       headGroupRef.current.rotation.set(snapX, snapY, snapZ);
     }
 
-    // Violent demonic red strobe light
-    if (pointLightRef.current) {
-      const strobe = Math.sin(time * 40) > 0 ? 35 : 12;
-      pointLightRef.current.intensity = strobe + Math.sin(time * 70) * 10;
+    // Violent strobe and demonic horror illumination
+    if (strobeLightRef.current) {
+      const strobe = Math.sin(time * 45) > 0 ? 40 : 12;
+      strobeLightRef.current.intensity = strobe + Math.sin(time * 80) * 12;
+    }
+    if (paleLightRef.current) {
+      paleLightRef.current.intensity = 18 + Math.sin(time * 20) * 6;
     }
   });
 
@@ -309,95 +255,76 @@ export default function KitchenJumpscare() {
   }
 
   return (
-    <group ref={monsterGroupRef}>
-      {/* ═══ MONSTER TORSO & SKELETAL CHEST ═══════════════════════════════ */}
-      <group position={[0, 0, 0]}>
-        {/* Slender Creepy Spine Column */}
-        <mesh position={[0, -0.2, 0.05]}>
-          <cylinderGeometry args={[0.07, 0.09, 0.8, 8]} />
-          <meshStandardMaterial color="#1a1411" roughness={0.9} />
+    <group ref={jumpscareGroupRef}>
+      {/* ═══ 1. RAVI KISHAN HORROR FACE ═══════════════════════════════════ */}
+      <group position={[0, 0, 0]} ref={headGroupRef}>
+        {/* Dark shadowy backdrop sphere for depth */}
+        <mesh position={[0, 0, -0.08]}>
+          <planeGeometry args={[1.1, 1.1]} />
+          <meshBasicMaterial color="#050403" transparent opacity={0.8} />
         </mesh>
 
-        {/* Emaciated Ribcage Structure */}
-        {[-0.05, -0.15, -0.25, -0.35].map((ry, idx) => (
-          <group key={`rib-${idx}`} position={[0, ry, 0.02]}>
-            <mesh rotation={[0, 0, Math.PI / 2]}>
-              <torusGeometry args={[0.18 - idx * 0.02, 0.02, 6, 12, Math.PI]} />
-              <meshStandardMaterial color="#221915" roughness={0.8} />
-            </mesh>
-          </group>
-        ))}
-
-        {/* Rotting Dark Flesh Core */}
-        <mesh position={[0, -0.2, 0]}>
-          <boxGeometry args={[0.32, 0.65, 0.22]} />
-          <meshStandardMaterial color="#140f0c" roughness={0.92} />
-        </mesh>
-      </group>
-
-      {/* ═══ HEAD WITH RAVI KISHAN FACE & LONG HAIR ══════════════════════ */}
-      <group position={[0, 0.35, 0]} ref={headGroupRef}>
-        {/* Head Base Skull */}
-        <mesh position={[0, 0, 0]}>
-          <boxGeometry args={[0.52, 0.62, 0.44]} />
-          <meshStandardMaterial color="#140e0c" roughness={0.9} />
-        </mesh>
-
-        {/* Ravi Kishan Front Face Quad */}
-        <mesh position={[0, 0, 0.23]}>
-          <planeGeometry args={[0.54, 0.64]} />
+        {/* Ravi Kishan Transparent Face Quad */}
+        <mesh position={[0, 0, 0.02]}>
+          <planeGeometry args={[0.95, 0.98]} />
           <meshStandardMaterial
             map={raviFaceTex}
+            transparent={true}
+            alphaTest={0.05}
             roughness={0.4}
-            color="#ffdddd"
+            color="#ffffff"
             emissive="#551111"
-            emissiveIntensity={0.6}
-            side={THREE.FrontSide}
+            emissiveIntensity={0.65}
+            side={THREE.DoubleSide}
           />
         </mesh>
 
-        {/* Demonic Glowing Eyes */}
-        <group position={[0, 0.08, 0.24]}>
-          {/* Left Eye */}
-          <mesh position={[-0.11, 0, 0]}>
-            <sphereGeometry args={[0.038, 8, 8]} />
+        {/* Demonic Piercing Glowing Eyes */}
+        <group position={[0, 0.06, 0.06]}>
+          {/* Left Eye Glow */}
+          <mesh position={[-0.13, 0, 0]}>
+            <sphereGeometry args={[0.028, 8, 8]} />
             <meshBasicMaterial color="#ff1100" />
           </mesh>
-          <mesh position={[-0.11, 0, 0.015]}>
-            <sphereGeometry args={[0.018, 6, 6]} />
-            <meshBasicMaterial color="#ffff55" />
+          <mesh position={[-0.13, 0, 0.01]}>
+            <sphereGeometry args={[0.015, 6, 6]} />
+            <meshBasicMaterial color="#ffff44" />
           </mesh>
 
-          {/* Right Eye */}
-          <mesh position={[0.11, 0, 0]}>
-            <sphereGeometry args={[0.038, 8, 8]} />
+          {/* Right Eye Glow */}
+          <mesh position={[0.13, 0, 0]}>
+            <sphereGeometry args={[0.028, 8, 8]} />
             <meshBasicMaterial color="#ff1100" />
           </mesh>
-          <mesh position={[0.11, 0, 0.015]}>
-            <sphereGeometry args={[0.018, 6, 6]} />
-            <meshBasicMaterial color="#ffff55" />
+          <mesh position={[0.13, 0, 0.01]}>
+            <sphereGeometry args={[0.015, 6, 6]} />
+            <meshBasicMaterial color="#ffff44" />
           </mesh>
         </group>
-
-        {/* Long Messy Dark Creepy Hair Strands */}
-        <MonsterHair />
       </group>
 
-      {/* ═══ LONG SPINDLY ARMS & CLAWS (REACHING FOR PLAYER) ═════════════ */}
-      <MonsterArm isLeft={true} />
-      <MonsterArm isLeft={false} />
+      {/* ═══ 2. REALISTIC REACHING GHOST CLAW HANDS ═════════════════════ */}
+      <RealisticGhostHand isLeft={true} />
+      <RealisticGhostHand isLeft={false} />
 
-      {/* ═══ LONG SPINDLY LEGS ════════════════════════════════════════════ */}
-      <MonsterLeg isLeft={true} />
-      <MonsterLeg isLeft={false} />
-
-      {/* ═══ SINISTER RED STROBE POINT LIGHT (ZERO SHADOWS FOR 60 FPS) ═══ */}
+      {/* ═══ 3. HORROR JUMPSCARE LIGHTING (60 FPS PERFORMANCE COMPLIANT) ═ */}
+      {/* Flickering Demonic Crimson Strobe */}
       <pointLight
-        ref={pointLightRef}
-        position={[0, 0.2, 0.6]}
-        distance={6}
-        intensity={30}
-        color="#ff1a1a"
+        ref={strobeLightRef}
+        position={[0, 0.2, 0.4]}
+        distance={4.5}
+        intensity={35}
+        color="#ff1111"
+        castShadow={false}
+      />
+
+      {/* Cold Pale Ghost Light to illuminate claws and face */}
+      <pointLight
+        ref={paleLightRef}
+        position={[0, -0.2, 0.5]}
+        distance={4.0}
+        intensity={18}
+        color="#a8d0d5"
         castShadow={false}
       />
     </group>
