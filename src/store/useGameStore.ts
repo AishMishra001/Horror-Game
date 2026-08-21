@@ -12,6 +12,8 @@ interface GameStore {
   playerPos: { x: number; y: number; z: number };
   isKitchenJumpscareTriggered: boolean;
   isKitchenJumpscareActive: boolean;
+  isStairDanceTriggered: boolean;
+  isStairDanceActive: boolean;
   isSprinting: boolean;
   stamina: number;
   setGameState: (state: GameState) => void;
@@ -23,6 +25,8 @@ interface GameStore {
   setShowMap: (show: boolean) => void;
   triggerKitchenJumpscare: () => void;
   endKitchenJumpscare: () => void;
+  triggerStairDance: () => void;
+  endStairDance: () => void;
   setIsSprinting: (sprinting: boolean) => void;
   setStamina: (stamina: number) => void;
 }
@@ -37,6 +41,8 @@ export const useGameStore = create<GameStore>((set) => ({
   playerPos: { x: 0, y: 0, z: 0 },
   isKitchenJumpscareTriggered: false,
   isKitchenJumpscareActive: false,
+  isStairDanceTriggered: false,
+  isStairDanceActive: false,
   isSprinting: false,
   stamina: 100,
   setGameState: (state) => set({ gameState: state }),
@@ -48,6 +54,8 @@ export const useGameStore = create<GameStore>((set) => ({
   setShowMap: (show) => set({ showMap: show }),
   triggerKitchenJumpscare: () => set({ isKitchenJumpscareTriggered: true, isKitchenJumpscareActive: true }),
   endKitchenJumpscare: () => set({ isKitchenJumpscareActive: false }),
+  triggerStairDance: () => set({ isStairDanceTriggered: true, isStairDanceActive: true }),
+  endStairDance: () => set({ isStairDanceActive: false }),
   setIsSprinting: (sprinting) => set({ isSprinting: sprinting }),
   setStamina: (stamina) => set({ stamina }),
 }));

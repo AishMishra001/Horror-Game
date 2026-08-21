@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import MapUI from './MapUI';
 import MobileControls from './MobileControls';
 import LandscapePrompt from './LandscapePrompt';
-import { playCreepyAudio, playFlashlightClickSound } from '@/utils/creepyAudio';
+import { playCreepyAudio, stopCreepyAudio, playFlashlightClickSound } from '@/utils/creepyAudio';
 
 export default function UI() {
   const gameState = useGameStore((s) => s.gameState);
@@ -18,11 +18,14 @@ export default function UI() {
   const interactPrompt = useGameStore((s) => s.interactPrompt);
   const isKitchenJumpscareActive = useGameStore((s) => s.isKitchenJumpscareActive);
   const endKitchenJumpscare = useGameStore((s) => s.endKitchenJumpscare);
+  const isStairDanceActive = useGameStore((s) => s.isStairDanceActive);
+  const endStairDance = useGameStore((s) => s.endStairDance);
 
   const isTouchDevice = useTouchControls((s) => s.isTouchDevice);
 
   const hasPlayedAudioRef = useRef(false);
   const jumpscareAudioRef = useRef<HTMLAudioElement | null>(null);
+  const danceAudioRef = useRef<HTMLAudioElement | null>(null);
   const prevFlashlightRef = useRef(false);
   const [showPickupToast, setShowPickupToast] = useState(false);
   const fpsRef = useRef<HTMLDivElement>(null);
@@ -62,9 +65,19 @@ export default function UI() {
     prevFlashlightRef.current = hasFlashlight;
   }, [hasFlashlight]);
 
-  // Restart and Pause shortcut handlers
+  // Restart, Pause, and Stair Dance skip shortcut handlers
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (useGameStore.getState().isStairDanceActive) {
+        if (e.code === 'Space' || e.code === 'Enter' || e.code === 'Escape') {
+          useGameStore.getState().endStairDance();
+          if (danceAudioRef.current) {
+            danceAudioRef.current.pause();
+          }
+          return;
+        }
+      }
+
       if (e.key === 'r' || e.key === 'R') {
         if (gameState === 'gameover' || gameState === 'win') {
           window.location.reload(); 
@@ -82,6 +95,34 @@ export default function UI() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [gameState, setGameState]);
+
+  // Stair Dance audio lifecycle handler (synced to "Main Teri Queen" song completion)
+  useEffect(() => {
+    if (isStairDanceActive) {
+      const audio = new Audio('/ravi-dance-teri-queen.mp3');
+      audio.volume = 1.0;
+      danceAudioRef.current = audio;
+
+      const handleAudioEnd = () => {
+        endStairDance();
+      };
+
+      audio.addEventListener('ended', handleAudioEnd);
+      audio.addEventListener('error', handleAudioEnd);
+
+      audio.play().catch(() => {});
+
+      return () => {
+        audio.removeEventListener('ended', handleAudioEnd);
+        audio.removeEventListener('error', handleAudioEnd);
+        audio.pause();
+      };
+    } else {
+      if (danceAudioRef.current) {
+        danceAudioRef.current.pause();
+      }
+    }
+  }, [isStairDanceActive, endStairDance]);
 
   // Jumpscare audio lifecycle handler (synced directly to audio completion)
   useEffect(() => {
@@ -413,6 +454,41 @@ export default function UI() {
           
           {/* Subtle analog scanlines */}
           <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.4)_50%)] bg-[length:100%_4px] opacity-60" />
+        </div>
+      )}
+
+      {/* ═══ 3D RAVI KISHAN 'MAIN TERI QUEEN' STAIR DANCE OVERLAY ══════════ */}
+      {isStairDanceActive && (
+        <div className="fixed inset-0 z-50 pointer-events-none flex flex-col justify-between overflow-hidden animate-fadeIn">
+          {/* Cinematic Top Letterbox Bar */}
+          <div className="w-full bg-gradient-to-b from-black via-black/90 to-transparent pt-4 pb-8 px-4 flex flex-col items-center justify-center text-center shadow-[0_10px_30px_rgba(0,0,0,0.9)]">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <span className="text-xl sm:text-3xl animate-bounce">👑</span>
+              <h2 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-500 drop-shadow-[0_0_20px_rgba(255,215,0,0.8)] uppercase">
+                LORD RAVI KISHAN
+              </h2>
+              <span className="text-xl sm:text-3xl animate-bounce">👑</span>
+            </div>
+            <p className="text-sm sm:text-xl font-bold tracking-[0.25em] text-pink-400 drop-shadow-[0_0_12px_rgba(255,0,128,0.8)] mt-1 animate-pulse uppercase">
+              ✨ Main Teri Queen Aa Ve... ✨
+            </p>
+          </div>
+
+          {/* Atmospheric Disco Horror Stage Vignette */}
+          <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,transparent_35%,rgba(255,0,128,0.18)_70%,rgba(0,0,0,0.85)_100%)] mix-blend-screen" />
+
+          {/* Cinematic Bottom Letterbox Bar & Interactive Skip Button */}
+          <div className="w-full bg-gradient-to-t from-black via-black/90 to-transparent pb-6 pt-10 px-4 flex flex-col items-center justify-center pointer-events-auto">
+            <button
+              onClick={() => {
+                endStairDance();
+                if (danceAudioRef.current) danceAudioRef.current.pause();
+              }}
+              className="px-6 py-2.5 sm:px-8 sm:py-3 text-sm sm:text-base md:text-lg font-bold tracking-wider text-yellow-300 bg-black/70 hover:bg-yellow-950/80 border-2 border-yellow-500/80 hover:border-yellow-400 rounded-full active:scale-95 transition-all duration-300 shadow-[0_0_20px_rgba(255,215,0,0.4)] cursor-pointer backdrop-blur-sm"
+            >
+              {isTouchDevice ? 'TAP TO CONTINUE' : 'PRESS [SPACE] OR CLICK TO CONTINUE'}
+            </button>
+          </div>
         </div>
       )}
 

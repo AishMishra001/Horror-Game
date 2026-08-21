@@ -1,12 +1,25 @@
 'use client';
 
-// Web Audio API helper for playing audio with a creepy echo & pitch effect
 let activeAudioContext: AudioContext | null = null;
+let activeAudioSource: AudioBufferSourceNode | null = null;
+
+export function stopCreepyAudio() {
+  if (activeAudioSource) {
+    try {
+      activeAudioSource.stop();
+    } catch {
+      // Ignore if already stopped
+    }
+    activeAudioSource = null;
+  }
+}
 
 export async function playCreepyAudio(audioUrl: string = '/koteshwaraye-ravi-kishan.mp3') {
   if (typeof window === 'undefined') return;
 
   try {
+    stopCreepyAudio();
+
     const AudioCtxClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     if (!activeAudioContext || activeAudioContext.state === 'closed') {
       activeAudioContext = new AudioCtxClass();
@@ -24,6 +37,7 @@ export async function playCreepyAudio(audioUrl: string = '/koteshwaraye-ravi-kis
 
     const source = audioCtx.createBufferSource();
     source.buffer = audioBuffer;
+    activeAudioSource = source;
 
     // Pitch drop / slow down for eerie haunted voice (0.9x speed)
     source.playbackRate.value = 0.9;

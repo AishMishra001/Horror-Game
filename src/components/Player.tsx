@@ -120,12 +120,16 @@ export default function Player() {
     };
   }, []);
 
+  const isStairDanceActive = useGameStore((s) => s.isStairDanceActive);
+
   // Pre-allocated vectors & euler for 60FPS zero-GC movement calculations
   const frontVec = useRef(new Vector3());
   const sideVec = useRef(new Vector3());
   const inputDir = useRef(new Vector3());
   const aimVec = useRef(new Vector3());
   const playerYawEuler = useRef(new Euler(0, 0, 0, 'YXZ'));
+  const danceTargetPos = useRef(new Vector3(0, 5.8, 20.6));
+  const danceLookVec = useRef(new Vector3());
 
   useFrame((state, rawDelta) => {
     if (!bodyRef.current || gameState !== 'playing') return;
@@ -138,7 +142,31 @@ export default function Player() {
     const delta = Math.min(rawDelta, 0.05);
     const m = movementRef.current;
 
-    // 0. Touch Camera Look Consumption (Standard FPS yaw and pitch)
+    // 0. Freeze & Camera Focus during Stair Dance Sequence
+    if (isStairDanceActive) {
+      // Smoothly orient camera to gaze directly at dancing Lord Ravi Kishan at top of stairs
+      danceLookVec.current.copy(danceTargetPos.current).sub(camera.position);
+      const targetYaw = Math.atan2(-danceLookVec.current.x, -danceLookVec.current.z);
+      const targetPitch = Math.atan2(danceLookVec.current.y, Math.hypot(danceLookVec.current.x, danceLookVec.current.z));
+
+      camera.rotation.y = MathUtils.lerp(camera.rotation.y, targetYaw, delta * 6);
+      camera.rotation.x = MathUtils.lerp(camera.rotation.x, targetPitch, delta * 6);
+      camera.rotation.z = 0;
+
+      // Halt movement and freeze player body in place
+      smoothedVelocity.current.set(0, 0, 0);
+      bodyRef.current.setLinvel({ x: 0, y: bodyRef.current.linvel().y, z: 0 }, true);
+
+      const pos = bodyRef.current.translation();
+      const store = useGameStore.getState();
+      store.playerPos.x = pos.x;
+      store.playerPos.y = pos.y;
+      store.playerPos.z = pos.z;
+      camera.position.set(pos.x, pos.y + currentHeightRef.current - 1, pos.z);
+      return;
+    }
+
+    // Standard Touch Camera Look Consumption (Standard FPS yaw and pitch)
     const { dx, dy } = useTouchControls.getState().consumeLookDelta();
     if (dx !== 0 || dy !== 0) {
       camera.rotation.y -= dx * 1.5;

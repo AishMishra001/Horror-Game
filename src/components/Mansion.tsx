@@ -11,6 +11,8 @@ import HorrorKitchen from './HorrorKitchen';
 import HorrorBathroom from './HorrorBathroom';
 import HorrorMasterBedroom from './HorrorMasterBedroom';
 import HorrorRitualBedroom from './HorrorRitualBedroom';
+import HorrorWashroom1 from './HorrorWashroom1';
+import HorrorWashroom2 from './HorrorWashroom2';
 import InteractableRoomDoor from './InteractableRoomDoor';
 import LobbyLights from './LobbyLights';
 
@@ -892,28 +894,14 @@ export default function Mansion() {
       <InteractableRoomDoor position={[6.5, 5.0, 6.5]} rotY={0} woodTex={doorWoodTex} doorName="Washroom 2 Door" />
 
       {/* ═══ 4 FULLY FURNISHED 2ND FLOOR ROOMS ═══════════════════════════════ */}
-      {/* ROOM 1: WASHROOM 1 (North-West Blood Bath) */}
-      <mesh position={[-10.75, 5.02, 4.25]} receiveShadow>
-        <boxGeometry args={[8.5, 0.04, 16.5]} />
-        <meshStandardMaterial map={tileTex} roughness={0.3} color="#bcd2db" />
-      </mesh>
-      <ClawfootBathtub position={[-12.5, 5.0, 0.0]} rotY={0} bloody={true} />
-      <WashroomMirror position={[-14.8, 7.2, 6.5]} rotY={Math.PI / 2} />
-      <VictorianToilet position={[-13.5, 5.0, 10.0]} rotY={Math.PI / 2} />
-      <PedestalSink position={[-10.5, 5.0, 11.5]} rotY={Math.PI} />
+      {/* ROOM 1: WASHROOM 1 (North-West Dilapidated Clinical Restroom) */}
+      <HorrorWashroom1 />
 
       {/* ROOM 2: BEDROOM 1 (South-West Master Victorian Dread) */}
       <HorrorMasterBedroom />
 
-      {/* ROOM 3: WASHROOM 2 (North-East Medical Restroom) */}
-      <mesh position={[10.75, 5.02, 4.25]} receiveShadow>
-        <boxGeometry args={[8.5, 0.04, 16.5]} />
-        <meshStandardMaterial map={tileTex} roughness={0.3} color="#bcd2db" />
-      </mesh>
-      <ClawfootBathtub position={[12.5, 5.0, 0.0]} rotY={0} bloody={false} />
-      <WashroomMirror position={[14.8, 7.2, 6.5]} rotY={-Math.PI / 2} />
-      <VictorianToilet position={[13.5, 5.0, 10.0]} rotY={-Math.PI / 2} />
-      <PedestalSink position={[10.5, 5.0, 11.5]} rotY={Math.PI} />
+      {/* ROOM 3: WASHROOM 2 (North-East Sinister Luxury Vanity Restroom) */}
+      <HorrorWashroom2 />
 
       {/* ROOM 4: BEDROOM 2 (South-East Occult Asylum & Seance Ward) */}
       <HorrorRitualBedroom />

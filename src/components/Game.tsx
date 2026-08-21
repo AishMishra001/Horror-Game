@@ -8,6 +8,7 @@ import { useGameStore } from '@/store/useGameStore';
 import Player from './Player';
 import Mansion from './Mansion';
 import KitchenJumpscare from './KitchenJumpscare';
+import RaviKishanDanceMonster from './RaviKishanDanceMonster';
 
 export default function Game() {
   const { gameState } = useGameStore();
@@ -41,6 +42,7 @@ export default function Game() {
             <Player />
             <Mansion />
             <KitchenJumpscare />
+            <RaviKishanDanceMonster />
           </Physics>
         </Suspense>
       </Canvas>

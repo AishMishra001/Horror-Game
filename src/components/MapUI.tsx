@@ -182,10 +182,10 @@ export default function MapUI() {
               )}
             </div>
 
-            {/* Room 1: Washroom 1 (NW Blood Bath) */}
+            {/* Room 1: Washroom 1 (NW Clinical Restroom) */}
             <div className="absolute left-[3%] top-[4%] w-[28%] h-[34%] border-2 border-cyan-900/70 bg-cyan-950/30 flex flex-col items-center justify-center text-xs font-bold text-cyan-300">
               <span>WASHROOM 1</span>
-              <span className="text-[9px] text-cyan-500 mt-0.5">Clawfoot Tub & Mirror</span>
+              <span className="text-[9px] text-cyan-400 mt-0.5">Clinical Stalls & Sink</span>
             </div>
 
             {/* Room 2: Bedroom 1 (SW Master Bedroom) */}
@@ -196,10 +196,10 @@ export default function MapUI() {
               </span>
             </div>
 
-            {/* Room 3: Washroom 2 (NE Medical Restroom) */}
+            {/* Room 3: Washroom 2 (NE Sinister Vanity Restroom) */}
             <div className="absolute left-[69%] top-[4%] w-[28%] h-[34%] border-2 border-emerald-900/70 bg-emerald-950/30 flex flex-col items-center justify-center text-xs font-bold text-emerald-300">
               <span>WASHROOM 2</span>
-              <span className="text-[9px] text-emerald-500 mt-0.5">Twin Vanity & Toilet</span>
+              <span className="text-[9px] text-emerald-400 mt-0.5">Black Vanity & Mirror</span>
             </div>
 
             {/* Room 4: Bedroom 2 (SE Ritual Room) */}
