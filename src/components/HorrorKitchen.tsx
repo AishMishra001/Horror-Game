@@ -57,8 +57,6 @@ function VintageFlashlightItem({ position }: { position: [number, number, number
         <meshStandardMaterial color="#b71c1c" roughness={0.5} metalness={0.2} />
       </mesh>
 
-      {/* Subtle Warm Highlight Light */}
-      <pointLight position={[0, 0.15, 0.15]} color="#ffe082" distance={1.2} intensity={2.0} castShadow={false} />
     </group>
   );
 }
@@ -367,8 +365,7 @@ function VintageHeavyStove({
           />
         </mesh>
 
-        {/* Occult Red Ambient Light */}
-        <pointLight position={[0, 1.7, 0]} color="#ff2200" intensity={6} distance={3.0} castShadow={false} />
+
 
         {/* Heavy Cast Iron Stove Body */}
         <mesh position={[0, 0.46, 0]} receiveShadow>
@@ -558,14 +555,6 @@ function FrostedIndustrialWindow({
         />
       </mesh>
 
-      {/* Cold Fog Light */}
-      <pointLight
-        position={[0, 0.5, 1.2]}
-        color="#82b8d4"
-        intensity={14}
-        distance={9}
-        castShadow={false}
-      />
     </group>
   );
 }
@@ -906,9 +895,6 @@ export default function HorrorKitchen({
       {/* Wall Accents */}
       <VintageWallAccents position={[-1.0, 0, 6.9]} />
 
-      {/* Atmospheric Creepy Ambient Fill Lights */}
-      <pointLight position={[-3.0, 2.2, -3.0]} color="#488a6c" intensity={6} distance={8.0} castShadow={false} />
-      <pointLight position={[2.0, 2.2, 1.5]} color="#6e5635" intensity={5} distance={8.0} castShadow={false} />
     </group>
   );
 }

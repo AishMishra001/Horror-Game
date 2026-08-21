@@ -673,16 +673,9 @@ function CreepyCeilingLightingAndBeams({
           <meshStandardMaterial
             color="#ffffff"
             emissive="#c0e8ff"
-            emissiveIntensity={1.5}
+            emissiveIntensity={1.8}
           />
         </mesh>
-        <pointLight
-          position={[0, -1.2, 0]}
-          color="#a0d8f0"
-          distance={8.0}
-          intensity={6.0}
-          castShadow={false}
-        />
       </group>
     </group>
   );

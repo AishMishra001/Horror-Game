@@ -4,11 +4,14 @@ import { RigidBody, CuboidCollider } from '@react-three/rapier';
 import { useGameStore } from '@/store/useGameStore';
 import { useRef, useEffect, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Mesh } from 'three';
+
 import { useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 import HorrorKitchen from './HorrorKitchen';
 import HorrorBathroom from './HorrorBathroom';
+import HorrorMasterBedroom from './HorrorMasterBedroom';
+import HorrorRitualBedroom from './HorrorRitualBedroom';
+import InteractableRoomDoor from './InteractableRoomDoor';
 import LobbyLights from './LobbyLights';
 
 const doorAudio = typeof window !== 'undefined' ? new Audio('/stairs and doors.mp3') : null;
@@ -658,7 +661,7 @@ export default function Mansion() {
 
   const flickLightRef = useRef<THREE.PointLight>(null);
   const flickLight2Ref = useRef<THREE.PointLight>(null);
-  const keyRef = useRef<Mesh>(null);
+  const keyRef = useRef<THREE.Group>(null);
 
   useFrame((state, rawDelta) => {
     const delta = Math.min(rawDelta, 0.05);
@@ -696,17 +699,9 @@ export default function Mansion() {
       {/* ═══ ATMOSPHERIC LIGHTING ════════════════════════════════════════════ */}
       <LobbyLights />
       {/* Upper Landing Chandelier */}
-      <pointLight position={[0, 8.8, 22.0]} intensity={16} distance={14} color="#ffaa55" castShadow={false} />
-      {/* Washroom 1 (NW) */}
-      <pointLight position={[-10.75, 8.5, 4.0]} intensity={7} distance={10} color="#a0e0e8" castShadow={false} />
-      {/* Bedroom 1 (SW - Master) */}
-      <pointLight ref={flickLightRef} position={[-10.75, 8.5, 19.0]} intensity={14} distance={12} color="#ff9944" castShadow={false} />
-      {/* Washroom 2 (NE) */}
-      <pointLight position={[10.75, 8.5, 4.0]} intensity={6} distance={10} color="#b8e8b0" castShadow={false} />
-      {/* Bedroom 2 (SE - Ritual) */}
-      <pointLight ref={flickLight2Ref} position={[10.75, 8.5, 19.0]} intensity={14} distance={12} color="#ff4422" castShadow={false} />
+      <pointLight position={[0, 8.8, 22.0]} intensity={12} distance={12} color="#ffaa55" castShadow={false} />
       {/* Front Balcony Key area */}
-      <pointLight position={[0, 7.5, 2.0]} intensity={10} distance={9} color="#ffd700" castShadow={false} />
+      <pointLight position={[0, 7.5, 2.0]} intensity={8} distance={8} color="#ffd700" castShadow={false} />
 
       {/* ═══ GROUND FLOOR SLAB ═══════════════════════════════════════════════ */}
       <RigidBody type="fixed" colliders="cuboid">
@@ -877,18 +872,24 @@ export default function Mansion() {
       <Wall pos={[-6.5, 9.0, 6.5]} size={[0.3, 2.0, 3.0]} texMap={wallTex} />
       <Wall pos={[-6.5, 7.5, 11.75]} size={[0.3, 5.0, 7.5]} texMap={wallTex} />
       <Wall pos={[-6.5, 9.0, 17.0]} size={[0.3, 2.0, 3.0]} texMap={wallTex} />
-      <Wall pos={[-6.5, 7.5, 20.0]} size={[0.3, 5.0, 3.0]} texMap={wallTex} />
-      <Wall pos={[-6.5, 9.0, 23.0]} size={[0.3, 2.0, 3.0]} texMap={wallTex} />
-      <Wall pos={[-6.5, 7.5, 25.0]} size={[0.3, 5.0, 1.0]} texMap={wallTex} />
+      <Wall pos={[-6.5, 7.5, 22.0]} size={[0.3, 5.0, 7.0]} texMap={wallTex} />
 
       {/* East Corridor Wall */}
       <Wall pos={[6.5, 7.5, 0.5]} size={[0.3, 5.0, 9.0]} texMap={wallTex} />
       <Wall pos={[6.5, 9.0, 6.5]} size={[0.3, 2.0, 3.0]} texMap={wallTex} />
       <Wall pos={[6.5, 7.5, 11.75]} size={[0.3, 5.0, 7.5]} texMap={wallTex} />
       <Wall pos={[6.5, 9.0, 17.0]} size={[0.3, 2.0, 3.0]} texMap={wallTex} />
-      <Wall pos={[6.5, 7.5, 20.0]} size={[0.3, 5.0, 3.0]} texMap={wallTex} />
-      <Wall pos={[6.5, 9.0, 23.0]} size={[0.3, 2.0, 3.0]} texMap={wallTex} />
-      <Wall pos={[6.5, 7.5, 25.0]} size={[0.3, 5.0, 1.0]} texMap={wallTex} />
+      <Wall pos={[6.5, 7.5, 22.0]} size={[0.3, 5.0, 7.0]} texMap={wallTex} />
+
+      {/* ═══ 1ST/2ND FLOOR INTERACTABLE DOORS & GATES ════════════════════════ */}
+      {/* 1. Master Bedroom Entrance Door */}
+      <InteractableRoomDoor position={[-6.5, 5.0, 17.0]} rotY={0} woodTex={doorWoodTex} doorName="Master Bedroom Door" />
+      {/* 2. Ritual Bedroom Entrance Door */}
+      <InteractableRoomDoor position={[6.5, 5.0, 17.0]} rotY={0} woodTex={doorWoodTex} doorName="Ritual Bedroom Door" />
+      {/* 3. Washroom 1 Entrance Door */}
+      <InteractableRoomDoor position={[-6.5, 5.0, 6.5]} rotY={0} woodTex={doorWoodTex} doorName="Washroom 1 Door" />
+      {/* 4. Washroom 2 Entrance Door */}
+      <InteractableRoomDoor position={[6.5, 5.0, 6.5]} rotY={0} woodTex={doorWoodTex} doorName="Washroom 2 Door" />
 
       {/* ═══ 4 FULLY FURNISHED 2ND FLOOR ROOMS ═══════════════════════════════ */}
       {/* ROOM 1: WASHROOM 1 (North-West Blood Bath) */}
@@ -901,19 +902,8 @@ export default function Mansion() {
       <VictorianToilet position={[-13.5, 5.0, 10.0]} rotY={Math.PI / 2} />
       <PedestalSink position={[-10.5, 5.0, 11.5]} rotY={Math.PI} />
 
-      {/* ROOM 2: BEDROOM 1 (South-West Master Victorian) */}
-      <FourPosterBed position={[-11.0, 5.0, 20.0]} rotY={0} />
-      <VictorianFireplace position={[-14.8, 5.0, 16.0]} rotY={Math.PI / 2} />
-      <AntiqueArmoire position={[-14.5, 5.0, 23.5]} rotY={Math.PI / 2} />
-      <VictorianDesk position={[-8.5, 5.0, 14.5]} rotY={-Math.PI / 2} />
-      <mesh position={[-11.0, 7.5, 25.2]}>
-        <boxGeometry args={[2.0, 2.5, 0.06]} />
-        <meshStandardMaterial color="#1a0a00" roughness={0.8} />
-      </mesh>
-      <mesh position={[-11.0, 7.5, 25.24]}>
-        <planeGeometry args={[1.7, 2.2]} />
-        <meshStandardMaterial color="#2d1508" roughness={0.6} />
-      </mesh>
+      {/* ROOM 2: BEDROOM 1 (South-West Master Victorian Dread) */}
+      <HorrorMasterBedroom />
 
       {/* ROOM 3: WASHROOM 2 (North-East Medical Restroom) */}
       <mesh position={[10.75, 5.02, 4.25]} receiveShadow>
@@ -925,21 +915,8 @@ export default function Mansion() {
       <VictorianToilet position={[13.5, 5.0, 10.0]} rotY={-Math.PI / 2} />
       <PedestalSink position={[10.5, 5.0, 11.5]} rotY={Math.PI} />
 
-      {/* ROOM 4: BEDROOM 2 (South-East Occult Ritual Bedroom) */}
-      <OccultRitualCircle position={[10.5, 5.0, 18.5]} />
-      <GothicBookshelf position={[14.8, 5.0, 15.0]} rotY={-Math.PI / 2} />
-      <mesh position={[11.0, 5.35, 23.0]} receiveShadow>
-        <boxGeometry args={[1.6, 0.7, 2.2]} />
-        <meshStandardMaterial color="#221008" roughness={0.9} />
-      </mesh>
-      <mesh position={[11.0, 5.72, 23.0]}>
-        <boxGeometry args={[1.5, 0.1, 2.0]} />
-        <meshStandardMaterial color="#400508" roughness={0.9} />
-      </mesh>
-      <mesh position={[10.5, 7.8, 25.2]}>
-        <boxGeometry args={[1.5, 1.5, 0.04]} />
-        <meshStandardMaterial color="#300000" emissive="#200000" emissiveIntensity={0.5} />
-      </mesh>
+      {/* ROOM 4: BEDROOM 2 (South-East Occult Asylum & Seance Ward) */}
+      <HorrorRitualBedroom />
 
       {/* UPPER GRAND LANDING GALLERY */}
       <mesh position={[0, 7.8, 25.2]}>

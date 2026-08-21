@@ -189,9 +189,11 @@ export default function MapUI() {
             </div>
 
             {/* Room 2: Bedroom 1 (SW Master Bedroom) */}
-            <div className="absolute left-[3%] top-[40%] w-[28%] h-[40%] border-2 border-red-900/70 bg-red-950/30 flex flex-col items-center justify-center text-xs font-bold text-red-300">
+            <div className="absolute left-[3%] top-[40%] w-[28%] h-[40%] border-2 border-red-900/70 bg-red-950/30 flex flex-col items-center justify-center text-xs font-bold text-red-300 shadow-inner p-1 text-center">
               <span>MASTER BEDROOM</span>
-              <span className="text-[9px] text-red-400 mt-0.5">4-Poster Bed & Fireplace</span>
+              <span className="text-[9px] text-red-400 mt-1 bg-red-950/80 px-1.5 py-0.5 rounded border border-red-500/40">
+                🛏 Iron Bed & Rocking Chair
+              </span>
             </div>
 
             {/* Room 3: Washroom 2 (NE Medical Restroom) */}
@@ -201,9 +203,11 @@ export default function MapUI() {
             </div>
 
             {/* Room 4: Bedroom 2 (SE Ritual Room) */}
-            <div className="absolute left-[69%] top-[40%] w-[28%] h-[40%] border-2 border-rose-900/70 bg-rose-950/30 flex flex-col items-center justify-center text-xs font-bold text-rose-300">
-              <span>RITUAL BEDROOM</span>
-              <span className="text-[9px] text-rose-400 mt-0.5">Pentagram & Bookshelf</span>
+            <div className="absolute left-[69%] top-[40%] w-[28%] h-[40%] border-2 border-rose-900/70 bg-rose-950/30 flex flex-col items-center justify-center text-xs font-bold text-rose-300 shadow-inner p-1 text-center">
+              <span>RITUAL WARD</span>
+              <span className="text-[9px] text-rose-400 mt-1 bg-rose-950/80 px-1.5 py-0.5 rounded border border-rose-500/40">
+                🕯 Occult Altar & Ward Bed
+              </span>
             </div>
 
             {/* Grand Staircase Descent */}

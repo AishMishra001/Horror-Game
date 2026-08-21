@@ -8,6 +8,7 @@ import { Vector3, Euler, MathUtils, SpotLight } from 'three';
 import { useGameStore } from '@/store/useGameStore';
 import { useTouchControls, touchStateRef } from '@/store/useTouchControls';
 import { playFlashlightClickSound } from '@/utils/creepyAudio';
+import HeldItem from './HeldItem';
 
 const WALK_SPEED = 5.0;
 const SPRINT_SPEED = 8.0;
@@ -317,6 +318,9 @@ export default function Player() {
         shadow-mapSize={[512, 512]}
         shadow-bias={-0.0005}
       />
+
+      {/* First-person viewmodel: flashlight + key visible when held */}
+      <HeldItem />
     </>
   );
 }
