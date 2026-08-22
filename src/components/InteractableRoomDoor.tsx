@@ -18,6 +18,9 @@ interface InteractableRoomDoorProps {
   rotY?: number;
   woodTex: THREE.Texture;
   doorName?: string;
+  isForcedClosed?: boolean;
+  isLocked?: boolean;
+  lockedMessage?: string;
 }
 
 export default function InteractableRoomDoor({
@@ -25,6 +28,9 @@ export default function InteractableRoomDoor({
   rotY = 0,
   woodTex,
   doorName = 'Door',
+  isForcedClosed = false,
+  isLocked = false,
+  lockedMessage,
 }: InteractableRoomDoorProps) {
   const setInteractPrompt = useGameStore((s) => s.setInteractPrompt);
   const [isOpen, setIsOpen] = useState(false);
@@ -34,11 +40,23 @@ export default function InteractableRoomDoor({
   const leftPivotRef = useRef<THREE.Group>(null);
   const rightPivotRef = useRef<THREE.Group>(null);
 
+  // Force close trigger
+  useEffect(() => {
+    if (isForcedClosed && isOpenRef.current) {
+      playDoorSound();
+      setIsOpen(false);
+      isOpenRef.current = false;
+      if (canInteractRef.current) {
+        setInteractPrompt(lockedMessage || `${doorName} is Sealed Shut!`);
+      }
+    }
+  }, [isForcedClosed, lockedMessage, doorName, setInteractPrompt]);
+
   useFrame((_, rawDelta) => {
     const delta = Math.min(rawDelta, 0.05);
-    const targetLeft = isOpen ? -Math.PI / 1.75 : 0;
-    const targetRight = isOpen ? Math.PI / 1.75 : 0;
-    const lerpFactor = Math.min(1, delta * 5.0);
+    const targetLeft = (!isForcedClosed && isOpen) ? -Math.PI / 1.75 : 0;
+    const targetRight = (!isForcedClosed && isOpen) ? Math.PI / 1.75 : 0;
+    const lerpFactor = isForcedClosed ? Math.min(1, delta * 12.0) : Math.min(1, delta * 5.0);
 
     if (leftPivotRef.current) {
       const diff = targetLeft - leftPivotRef.current.rotation.y;
@@ -57,6 +75,11 @@ export default function InteractableRoomDoor({
   useEffect(() => {
     const handleKey = (evt: KeyboardEvent) => {
       if (evt.code === 'KeyE' && canInteractRef.current) {
+        if (isLocked) {
+          playDoorSound();
+          setInteractPrompt(lockedMessage || `🔒 ${doorName} is Sealed Shut by Dark Magic!`);
+          return;
+        }
         playDoorSound();
         const next = !isOpenRef.current;
         setIsOpen(next);
@@ -66,7 +89,7 @@ export default function InteractableRoomDoor({
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [doorName, setInteractPrompt]);
+  }, [doorName, setInteractPrompt, isLocked, lockedMessage]);
 
   return (
     <group position={position} rotation={[0, rotY, 0]}>

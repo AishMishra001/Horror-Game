@@ -20,12 +20,21 @@ export default function UI() {
   const endKitchenJumpscare = useGameStore((s) => s.endKitchenJumpscare);
   const isStairDanceActive = useGameStore((s) => s.isStairDanceActive);
   const endStairDance = useGameStore((s) => s.endStairDance);
+  const isRitualJumpscareActive = useGameStore((s) => s.isRitualJumpscareActive);
+  const isRitualLunging = useGameStore((s) => s.isRitualLunging);
+  const endRitualJumpscare = useGameStore((s) => s.endRitualJumpscare);
+  const setRitualLunging = useGameStore((s) => s.setRitualLunging);
+  const setRitualRaviDisappeared = useGameStore((s) => s.setRitualRaviDisappeared);
+  const setRitualDoorClosed = useGameStore((s) => s.setRitualDoorClosed);
+  const setRitualDoorLocked = useGameStore((s) => s.setRitualDoorLocked);
+  const triggerPlayerFling = useGameStore((s) => s.triggerPlayerFling);
 
   const isTouchDevice = useTouchControls((s) => s.isTouchDevice);
 
   const hasPlayedAudioRef = useRef(false);
   const jumpscareAudioRef = useRef<HTMLAudioElement | null>(null);
   const danceAudioRef = useRef<HTMLAudioElement | null>(null);
+  const ritualAudioRef = useRef<HTMLAudioElement | null>(null);
   const prevFlashlightRef = useRef(false);
   const [showPickupToast, setShowPickupToast] = useState(false);
   const fpsRef = useRef<HTMLDivElement>(null);
@@ -148,6 +157,96 @@ export default function UI() {
       };
     }
   }, [isKitchenJumpscareActive, endKitchenJumpscare]);
+
+  // Ritual Room jumpscare audio lifecycle handler (synced to "they_were_3_people_5_to_12.mp3")
+  useEffect(() => {
+    if (isRitualJumpscareActive) {
+      // 1. Immediately halt initial creepy mansion audio so voice dialogue is crystal clear
+      stopCreepyAudio();
+      setRitualLunging(false);
+      setRitualRaviDisappeared(false);
+
+      const audio = new Audio('/they_were_3_people_5_to_12.mp3');
+      audio.volume = 1.0;
+      ritualAudioRef.current = audio;
+
+      let isFinished = false;
+      let hasLunged = false;
+
+      const triggerLunge = () => {
+        if (!hasLunged) {
+          hasLunged = true;
+          setRitualLunging(true);
+        }
+      };
+
+      const handleTimeUpdate = () => {
+        // Trigger the terrifying close-up lunge right in front of the player's face towards end of dialogue
+        if (audio.duration && audio.currentTime >= Math.max(1, audio.duration - 1.8)) {
+          triggerLunge();
+        } else if (audio.currentTime >= 5.0) {
+          triggerLunge();
+        }
+      };
+
+      const handleAudioEnd = () => {
+        if (isFinished) return;
+        isFinished = true;
+
+        triggerLunge();
+
+        // 1. Telekinetically blast player backward out of the ritual room into the corridor
+        triggerPlayerFling();
+
+        // 2. Instantly slam the ritual room door shut & seal it
+        setRitualDoorClosed(true);
+        setRitualDoorLocked(true);
+
+        // 3. Vanish Ravi Kishan into thin air
+        setRitualRaviDisappeared(true);
+        setRitualLunging(false);
+
+        const slamAudio = new Audio('/stairs and doors.mp3');
+        slamAudio.volume = 0.95;
+        slamAudio.play().catch(() => {});
+
+        setTimeout(() => {
+          endRitualJumpscare();
+        }, 600);
+      };
+
+      audio.addEventListener('timeupdate', handleTimeUpdate);
+      audio.addEventListener('ended', handleAudioEnd);
+      audio.addEventListener('error', handleAudioEnd);
+
+      audio.play().catch(() => {});
+
+      // Fallback timer (~8.0s) in case of audio playback block or silent finish
+      const fallbackTimer = setTimeout(() => {
+        handleAudioEnd();
+      }, 8000);
+
+      return () => {
+        audio.removeEventListener('timeupdate', handleTimeUpdate);
+        audio.removeEventListener('ended', handleAudioEnd);
+        audio.removeEventListener('error', handleAudioEnd);
+        clearTimeout(fallbackTimer);
+        audio.pause();
+      };
+    } else {
+      if (ritualAudioRef.current) {
+        ritualAudioRef.current.pause();
+      }
+    }
+  }, [
+    isRitualJumpscareActive,
+    endRitualJumpscare,
+    triggerPlayerFling,
+    setRitualLunging,
+    setRitualRaviDisappeared,
+    setRitualDoorClosed,
+    setRitualDoorLocked,
+  ]);
 
   const handleStartGame = () => {
     setGameState('playing');
@@ -464,6 +563,35 @@ export default function UI() {
 
           {/* Cinematic Bottom Letterbox Bar */}
           <div className="w-full h-16 md:h-20 bg-gradient-to-t from-black via-black/90 to-transparent" />
+        </div>
+      )}
+
+      {/* ═══ RITUAL ROOM JUMPSCARE HORROR OVERLAY ═════════════════════════ */}
+      {isRitualJumpscareActive && (
+        <div className={`fixed inset-0 z-50 pointer-events-none flex flex-col justify-between overflow-hidden animate-fadeIn ${isRitualLunging ? 'horror-shake-effect' : ''}`}>
+          {/* Cinematic Top Letterbox Bar */}
+          <div className="w-full h-16 md:h-24 bg-gradient-to-b from-black via-black/95 to-transparent flex items-center justify-center">
+            <div className="text-red-500 font-mono text-xs md:text-sm tracking-[0.3em] uppercase opacity-90 animate-pulse flex items-center gap-2">
+              <span className="inline-block w-2 h-2 rounded-full bg-red-600 animate-ping" />
+              LORD RAVI KISHAN : RITUAL CHAMBER
+            </div>
+          </div>
+
+          {/* Demonic Occult Screen Vignette and Blood-Red Aura */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_20%,rgba(90,0,0,0.45)_65%,rgba(20,0,0,0.95)_100%)] pointer-events-none horror-red-flash" />
+          <div className="absolute inset-0 border-[10px] md:border-[16px] border-red-700/70 shadow-[inset_0_0_100px_rgba(255,0,0,0.8)] pointer-events-none opacity-80" />
+
+          {/* Subtitle Dialogue Bar */}
+          <div className="w-full pb-10 md:pb-14 flex flex-col items-center justify-center z-10">
+            <div className="px-5 md:px-8 py-2 md:py-3 bg-black/90 border border-red-600/90 rounded-md backdrop-blur-md shadow-[0_0_30px_rgba(255,0,0,0.7)] animate-bounce">
+              <span className="text-red-400 font-mono text-sm sm:text-lg md:text-2xl font-black tracking-widest uppercase drop-shadow-[0_0_12px_rgba(255,0,0,1)]">
+                RAVI KISHAN: &quot;THEY WERE 3 PEOPLE...&quot;
+              </span>
+            </div>
+          </div>
+
+          {/* Cinematic Bottom Letterbox Bar */}
+          <div className="w-full h-16 md:h-24 bg-gradient-to-t from-black via-black/95 to-transparent" />
         </div>
       )}
 

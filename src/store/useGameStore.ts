@@ -14,6 +14,13 @@ interface GameStore {
   isKitchenJumpscareActive: boolean;
   isStairDanceTriggered: boolean;
   isStairDanceActive: boolean;
+  isRitualJumpscareTriggered: boolean;
+  isRitualJumpscareActive: boolean;
+  isRitualLunging: boolean;
+  isRitualRaviDisappeared: boolean;
+  isRitualDoorClosed: boolean;
+  isRitualDoorLocked: boolean;
+  playerFlingTrigger: number;
   isSprinting: boolean;
   stamina: number;
   setGameState: (state: GameState) => void;
@@ -27,6 +34,13 @@ interface GameStore {
   endKitchenJumpscare: () => void;
   triggerStairDance: () => void;
   endStairDance: () => void;
+  triggerRitualJumpscare: () => void;
+  endRitualJumpscare: () => void;
+  setRitualLunging: (lunging: boolean) => void;
+  setRitualRaviDisappeared: (disappeared: boolean) => void;
+  setRitualDoorClosed: (closed: boolean) => void;
+  setRitualDoorLocked: (locked: boolean) => void;
+  triggerPlayerFling: () => void;
   setIsSprinting: (sprinting: boolean) => void;
   setStamina: (stamina: number) => void;
 }
@@ -43,6 +57,13 @@ export const useGameStore = create<GameStore>((set) => ({
   isKitchenJumpscareActive: false,
   isStairDanceTriggered: false,
   isStairDanceActive: false,
+  isRitualJumpscareTriggered: false,
+  isRitualJumpscareActive: false,
+  isRitualLunging: false,
+  isRitualRaviDisappeared: false,
+  isRitualDoorClosed: false,
+  isRitualDoorLocked: false,
+  playerFlingTrigger: 0,
   isSprinting: false,
   stamina: 100,
   setGameState: (state) => set({ gameState: state }),
@@ -56,6 +77,13 @@ export const useGameStore = create<GameStore>((set) => ({
   endKitchenJumpscare: () => set({ isKitchenJumpscareActive: false }),
   triggerStairDance: () => set({ isStairDanceTriggered: true, isStairDanceActive: true }),
   endStairDance: () => set({ isStairDanceActive: false }),
+  triggerRitualJumpscare: () => set({ isRitualJumpscareTriggered: true, isRitualJumpscareActive: true, isRitualLunging: false, isRitualRaviDisappeared: false }),
+  endRitualJumpscare: () => set({ isRitualJumpscareActive: false, isRitualLunging: false }),
+  setRitualLunging: (lunging) => set({ isRitualLunging: lunging }),
+  setRitualRaviDisappeared: (disappeared) => set({ isRitualRaviDisappeared: disappeared }),
+  setRitualDoorClosed: (closed) => set({ isRitualDoorClosed: closed }),
+  setRitualDoorLocked: (locked) => set({ isRitualDoorLocked: locked }),
+  triggerPlayerFling: () => set((state) => ({ playerFlingTrigger: state.playerFlingTrigger + 1 })),
   setIsSprinting: (sprinting) => set({ isSprinting: sprinting }),
   setStamina: (stamina) => set({ stamina }),
 }));

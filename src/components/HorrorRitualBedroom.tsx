@@ -5,6 +5,8 @@ import { useFrame } from '@react-three/fiber';
 import { RigidBody } from '@react-three/rapier';
 import { useTexture } from '@react-three/drei';
 import * as THREE from 'three';
+import RaviKishanCharacter from './RaviKishanCharacter';
+import { useGameStore } from '@/store/useGameStore';
 
 // ─── 1. Vaulted Ceiling Hanging Fabric Swags (Inspired by Ref Image 4) ─────────
 function CeilingHangingDrapes({ clothTex }: { clothTex: THREE.Texture }) {
@@ -580,6 +582,10 @@ function RitualRoomDebris({
 
 // ─── MAIN SE HORROR RITUAL BEDROOM COMPONENT ──────────────────────────────────
 export default function HorrorRitualBedroom() {
+  const isRitualJumpscareTriggered = useGameStore((s) => s.isRitualJumpscareTriggered);
+  const triggerRitualJumpscare = useGameStore((s) => s.triggerRitualJumpscare);
+  const isRitualRaviDisappeared = useGameStore((s) => s.isRitualRaviDisappeared);
+
   const [wardWallTex, bedClothTex, sigilTex, floorWoodTex, windowTex] = useTexture([
     '/textures/occult_ward_wall.jpg',
     '/textures/stained_bed_cloth.jpg',
@@ -601,6 +607,20 @@ export default function HorrorRitualBedroom() {
     floorWoodTex.wrapT = THREE.RepeatWrapping;
     floorWoodTex.repeat.set(4, 4);
   }, [wardWallTex, bedClothTex, floorWoodTex]);
+
+  // Fail-safe coordinate trigger for 2F Ritual Bedroom
+  useFrame((state) => {
+    const store = useGameStore.getState();
+    if (store.gameState === 'playing' && !store.isRitualJumpscareTriggered) {
+      const px = state.camera.position.x;
+      const py = state.camera.position.y;
+      const pz = state.camera.position.z;
+      // 2F Ritual Bedroom bounding box: X in [7.2, 14.5], Z in [13.0, 24.5], Y in [4.5, 9.0]
+      if (px >= 7.2 && px <= 14.5 && pz >= 13.0 && pz <= 24.5 && py >= 4.5) {
+        store.triggerRitualJumpscare();
+      }
+    }
+  });
 
   return (
     <group>
@@ -663,6 +683,36 @@ export default function HorrorRitualBedroom() {
 
       {/* ── 7. Floor Debris, Torn Pages & Detailing ── */}
       <RitualRoomDebris woodTex={floorWoodTex} />
+
+      {/* ═══ 8. RAVI KISHAN HORROR CHARACTER (Standing in Ritual Room) ═════ */}
+      {!isRitualRaviDisappeared && (
+        <RaviKishanCharacter
+          position={[10.75, 5.0, 17.5]}
+          rotation={[0, -Math.PI / 2, 0]}
+          scale={1.05}
+        />
+      )}
+
+      {/* ── 9. Ritual Room Entry Jumpscare Sensor Threshold ── */}
+      {!isRitualJumpscareTriggered && (
+        <RigidBody
+          type="fixed"
+          position={[7.5, 6.2, 17.0]}
+          sensor
+          onIntersectionEnter={(e) => {
+            if (e.other.rigidBodyObject?.name === 'player') {
+              const store = useGameStore.getState();
+              if (!store.isRitualJumpscareTriggered) {
+                store.triggerRitualJumpscare();
+              }
+            }
+          }}
+        >
+          <mesh visible={false}>
+            <boxGeometry args={[1.5, 2.8, 3.0]} />
+          </mesh>
+        </RigidBody>
+      )}
     </group>
   );
 }

@@ -660,6 +660,8 @@ export default function Mansion() {
   const setGameState = useGameStore((s) => s.setGameState);
   const isKitchenJumpscareTriggered = useGameStore((s) => s.isKitchenJumpscareTriggered);
   const triggerKitchenJumpscare = useGameStore((s) => s.triggerKitchenJumpscare);
+  const isRitualDoorClosed = useGameStore((s) => s.isRitualDoorClosed);
+  const isRitualDoorLocked = useGameStore((s) => s.isRitualDoorLocked);
 
   const flickLightRef = useRef<THREE.PointLight>(null);
   const flickLight2Ref = useRef<THREE.PointLight>(null);
@@ -887,7 +889,15 @@ export default function Mansion() {
       {/* 1. Master Bedroom Entrance Door */}
       <InteractableRoomDoor position={[-6.5, 5.0, 17.0]} rotY={0} woodTex={doorWoodTex} doorName="Master Bedroom Door" />
       {/* 2. Ritual Bedroom Entrance Door */}
-      <InteractableRoomDoor position={[6.5, 5.0, 17.0]} rotY={0} woodTex={doorWoodTex} doorName="Ritual Bedroom Door" />
+      <InteractableRoomDoor
+        position={[6.5, 5.0, 17.0]}
+        rotY={0}
+        woodTex={doorWoodTex}
+        doorName="Ritual Bedroom Door"
+        isForcedClosed={isRitualDoorClosed}
+        isLocked={isRitualDoorLocked}
+        lockedMessage="🔒 The Ritual Bedroom is sealed shut by dark occult magic..."
+      />
       {/* 3. Washroom 1 Entrance Door */}
       <InteractableRoomDoor position={[-6.5, 5.0, 6.5]} rotY={0} woodTex={doorWoodTex} doorName="Washroom 1 Door" />
       {/* 4. Washroom 2 Entrance Door */}

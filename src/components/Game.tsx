@@ -9,7 +9,6 @@ import Player from './Player';
 import Mansion from './Mansion';
 import KitchenJumpscare from './KitchenJumpscare';
 import RaviKishanDanceMonster from './RaviKishanDanceMonster';
-import RaviKishanCharacter from './RaviKishanCharacter';
 
 export default function Game() {
   const { gameState } = useGameStore();
@@ -44,8 +43,6 @@ export default function Game() {
             <Mansion />
             <KitchenJumpscare />
             <RaviKishanDanceMonster />
-            {/* TEST / INSPECTION SPAWN: High-Realism 3D Ravi Kishan Horror Character */}
-            <RaviKishanCharacter position={[0, 0, -2.5]} rotation={[0, 0, 0]} />
           </Physics>
         </Suspense>
       </Canvas>

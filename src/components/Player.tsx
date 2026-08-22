@@ -121,6 +121,7 @@ export default function Player() {
   }, []);
 
   const isStairDanceActive = useGameStore((s) => s.isStairDanceActive);
+  const isRitualJumpscareActive = useGameStore((s) => s.isRitualJumpscareActive);
 
   // Pre-allocated vectors & euler for 60FPS zero-GC movement calculations
   const frontVec = useRef(new Vector3());
@@ -130,6 +131,9 @@ export default function Player() {
   const playerYawEuler = useRef(new Euler(0, 0, 0, 'YXZ'));
   const danceTargetPos = useRef(new Vector3(0, 5.8, 20.6));
   const danceLookVec = useRef(new Vector3());
+  const ritualTargetPos = useRef(new Vector3(10.75, 6.4, 17.5));
+  const ritualLookVec = useRef(new Vector3());
+  const lastFlingTriggerRef = useRef(0);
 
   useFrame((state, rawDelta) => {
     if (!bodyRef.current || gameState !== 'playing') return;
@@ -142,7 +146,19 @@ export default function Player() {
     const delta = Math.min(rawDelta, 0.05);
     const m = movementRef.current;
 
-    // 0. Freeze & Camera Focus during Stair Dance Sequence
+    // Check for player fling impulse event
+    const store = useGameStore.getState();
+    if (store.playerFlingTrigger > lastFlingTriggerRef.current) {
+      lastFlingTriggerRef.current = store.playerFlingTrigger;
+      // Violently blast player out through the doorway into the 2F corridor
+      bodyRef.current.setTranslation({ x: 3.5, y: 5.2, z: 17.0 }, true);
+      bodyRef.current.setLinvel({ x: -14.0, y: 2.5, z: 0 }, true);
+      smoothedVelocity.current.set(-14.0, 0, 0);
+      camera.rotation.y = -Math.PI / 2; // Look back towards the slamming door
+      camera.rotation.x = -0.15;
+    }
+
+    // 0a. Freeze & Camera Focus during Stair Dance Sequence
     if (isStairDanceActive) {
       // Smoothly orient camera to gaze directly at dancing Lord Ravi Kishan at top of stairs
       danceLookVec.current.copy(danceTargetPos.current).sub(camera.position);
@@ -158,7 +174,33 @@ export default function Player() {
       bodyRef.current.setLinvel({ x: 0, y: bodyRef.current.linvel().y, z: 0 }, true);
 
       const pos = bodyRef.current.translation();
-      const store = useGameStore.getState();
+      store.playerPos.x = pos.x;
+      store.playerPos.y = pos.y;
+      store.playerPos.z = pos.z;
+      camera.position.set(pos.x, pos.y + currentHeightRef.current - 1, pos.z);
+      return;
+    }
+
+    // 0b. Freeze & Camera Focus during Ritual Room Horror Monologue Sequence
+    if (isRitualJumpscareActive) {
+      // Smoothly orient camera to gaze directly at Lord Ravi Kishan in Ritual Room
+      ritualLookVec.current.copy(ritualTargetPos.current).sub(camera.position);
+      const targetYaw = Math.atan2(-ritualLookVec.current.x, -ritualLookVec.current.z);
+      const targetPitch = Math.atan2(ritualLookVec.current.y, Math.hypot(ritualLookVec.current.x, ritualLookVec.current.z));
+
+      // Subtle atmospheric trauma wobble
+      const wobbleX = Math.sin(state.clock.elapsedTime * 28.0) * 0.008;
+      const wobbleY = Math.cos(state.clock.elapsedTime * 22.0) * 0.008;
+
+      camera.rotation.y = MathUtils.lerp(camera.rotation.y, targetYaw + wobbleY, delta * 7.5);
+      camera.rotation.x = MathUtils.lerp(camera.rotation.x, targetPitch + wobbleX, delta * 7.5);
+      camera.rotation.z = Math.sin(state.clock.elapsedTime * 18.0) * 0.005;
+
+      // Halt movement and freeze player body in place
+      smoothedVelocity.current.set(0, 0, 0);
+      bodyRef.current.setLinvel({ x: 0, y: bodyRef.current.linvel().y, z: 0 }, true);
+
+      const pos = bodyRef.current.translation();
       store.playerPos.x = pos.x;
       store.playerPos.y = pos.y;
       store.playerPos.z = pos.z;
@@ -248,7 +290,6 @@ export default function Player() {
 
     // Update position in store for mini-map (direct mutation without set() prevents re-renders)
     const pos = bodyRef.current.translation();
-    const store = useGameStore.getState();
     store.playerPos.x = pos.x;
     store.playerPos.y = pos.y;
     store.playerPos.z = pos.z;
