@@ -65,19 +65,9 @@ export default function UI() {
     prevFlashlightRef.current = hasFlashlight;
   }, [hasFlashlight]);
 
-  // Restart, Pause, and Stair Dance skip shortcut handlers
+  // Restart and Pause shortcut handlers
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (useGameStore.getState().isStairDanceActive) {
-        if (e.code === 'Space' || e.code === 'Enter' || e.code === 'Escape') {
-          useGameStore.getState().endStairDance();
-          if (danceAudioRef.current) {
-            danceAudioRef.current.pause();
-          }
-          return;
-        }
-      }
-
       if (e.key === 'r' || e.key === 'R') {
         if (gameState === 'gameover' || gameState === 'win') {
           window.location.reload(); 
@@ -99,12 +89,18 @@ export default function UI() {
   // Stair Dance audio lifecycle handler (synced to "Main Teri Queen" song completion)
   useEffect(() => {
     if (isStairDanceActive) {
+      // 1. Immediately halt initial creepy mansion audio so dance song is crystal clear
+      stopCreepyAudio();
+
       const audio = new Audio('/ravi-dance-teri-queen.mp3');
       audio.volume = 1.0;
       danceAudioRef.current = audio;
 
       const handleAudioEnd = () => {
-        endStairDance();
+        // Allow jumpscare leap to fully hit the screen before concluding
+        setTimeout(() => {
+          endStairDance();
+        }, 500);
       };
 
       audio.addEventListener('ended', handleAudioEnd);
@@ -461,34 +457,13 @@ export default function UI() {
       {isStairDanceActive && (
         <div className="fixed inset-0 z-50 pointer-events-none flex flex-col justify-between overflow-hidden animate-fadeIn">
           {/* Cinematic Top Letterbox Bar */}
-          <div className="w-full bg-gradient-to-b from-black via-black/90 to-transparent pt-4 pb-8 px-4 flex flex-col items-center justify-center text-center shadow-[0_10px_30px_rgba(0,0,0,0.9)]">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <span className="text-xl sm:text-3xl animate-bounce">👑</span>
-              <h2 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-500 drop-shadow-[0_0_20px_rgba(255,215,0,0.8)] uppercase">
-                LORD RAVI KISHAN
-              </h2>
-              <span className="text-xl sm:text-3xl animate-bounce">👑</span>
-            </div>
-            <p className="text-sm sm:text-xl font-bold tracking-[0.25em] text-pink-400 drop-shadow-[0_0_12px_rgba(255,0,128,0.8)] mt-1 animate-pulse uppercase">
-              ✨ Main Teri Queen Aa Ve... ✨
-            </p>
-          </div>
+          <div className="w-full h-16 md:h-20 bg-gradient-to-b from-black via-black/90 to-transparent" />
 
           {/* Atmospheric Disco Horror Stage Vignette */}
-          <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,transparent_35%,rgba(255,0,128,0.18)_70%,rgba(0,0,0,0.85)_100%)] mix-blend-screen" />
+          <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,transparent_45%,rgba(0,0,0,0.75)_100%)]" />
 
-          {/* Cinematic Bottom Letterbox Bar & Interactive Skip Button */}
-          <div className="w-full bg-gradient-to-t from-black via-black/90 to-transparent pb-6 pt-10 px-4 flex flex-col items-center justify-center pointer-events-auto">
-            <button
-              onClick={() => {
-                endStairDance();
-                if (danceAudioRef.current) danceAudioRef.current.pause();
-              }}
-              className="px-6 py-2.5 sm:px-8 sm:py-3 text-sm sm:text-base md:text-lg font-bold tracking-wider text-yellow-300 bg-black/70 hover:bg-yellow-950/80 border-2 border-yellow-500/80 hover:border-yellow-400 rounded-full active:scale-95 transition-all duration-300 shadow-[0_0_20px_rgba(255,215,0,0.4)] cursor-pointer backdrop-blur-sm"
-            >
-              {isTouchDevice ? 'TAP TO CONTINUE' : 'PRESS [SPACE] OR CLICK TO CONTINUE'}
-            </button>
-          </div>
+          {/* Cinematic Bottom Letterbox Bar */}
+          <div className="w-full h-16 md:h-20 bg-gradient-to-t from-black via-black/90 to-transparent" />
         </div>
       )}
 
